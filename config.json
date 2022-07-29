@@ -2,5 +2,8 @@
   "prefix": "!",
   "clientId": "949787572626927646",
   "guildId": "949785091318644757",
-  "token": "OTQ5Nzg3NTcyNjI2OTI3NjQ2.YiPcmw.41XOw7uVWKbFmr5U9HgsuGS4r48"
+  "token": "OTQ5Nzg3NTcyNjI2OTI3NjQ2.YiPcmw.41XOw7uVWKbFmr5U9HgsuGS4r48",
+  "suggestionsChannel": "1002355287539331072",
+  "finalChannel": "1002326668079267850",
+  "manageRoles": ["949785133026779136"]
 }
