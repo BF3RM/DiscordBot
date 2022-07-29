@@ -19,7 +19,7 @@ exports.defaultEmbed = () => {
 
 exports.errorEmbed = (msg) => {
     return new Discord.MessageEmbed()
-        .setColor("#7a0015")
+        .setColor("RED")
         .setTimestamp()
         .setFooter({text: 'Suggestions', iconURL: "https://cdn.discordapp.com/icons/319035622100566017/a_5aeeef7eb99344d68afe62bf451de986.png?size=1024"})
         .addField("Error", msg)
@@ -27,7 +27,7 @@ exports.errorEmbed = (msg) => {
 
 exports.infoEmbed = (msg) => {
     return new Discord.MessageEmbed()
-        .setColor("#276fff")
+        .setColor("BLUE")
         .setTimestamp()
         .setFooter({text: 'Suggestions', iconURL: "https://cdn.discordapp.com/icons/319035622100566017/a_5aeeef7eb99344d68afe62bf451de986.png?size=1024"})
         .addField("Information", msg)
@@ -35,7 +35,7 @@ exports.infoEmbed = (msg) => {
 
 exports.successEmbed = (msg) => {
     return new Discord.MessageEmbed()
-        .setColor("#239138")
+        .setColor("GREEN")
         .setTimestamp()
         .setFooter({text: 'Suggestions', iconURL: "https://cdn.discordapp.com/icons/319035622100566017/a_5aeeef7eb99344d68afe62bf451de986.png?size=1024"})
         .addField("Success", msg)
