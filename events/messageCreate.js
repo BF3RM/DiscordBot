@@ -32,12 +32,6 @@ module.exports = async (client, message) => {
     const cmd = client.commands.get(command);
     if (message.channel.id == config.suggestionChannel) {
         if (!message.includes("!suggest")) {
-            const exampleEmbed = utility.errorEmbed("You should use the #suggest channel for suggestions!");
-            let msg = await message.channel.send({embeds: [exampleEmbed]});
-            message.delete();
-            setTimeout(() => {
-                msg.delete();
-            }, 5000);
             return;
         }
     }
