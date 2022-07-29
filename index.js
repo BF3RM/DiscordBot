@@ -42,60 +42,6 @@ for (const file of commands) {
 
 client.on('interactionCreate', async i => {
     if (!i.isButton()) return;
-
-    if (i.customId.includes("help")) {
-        for (let key in categories) {
-            if (i.customId === `help-${categories[key]}`) {
-                const exampleEmbed = new Discord.MessageEmbed()
-                    .setColor('#0099ff')
-                    .setTimestamp()
-                    .setFooter({text: 'Hyperity'})
-                    .setAuthor({
-                        name: 'Hyperity',
-                        iconURL: 'https://i.imgur.com/qCWqGFx.png',
-                        url: 'https://hyperity.ml'
-                    })
-                let cmdcount = 0;
-                client.commands.map((c) => {
-                    if (c.category == categories[key]) {
-                        let name = c.args != "" ? "!" + c.name + " [" + c.args + "]" : "!" + c.name;
-                        exampleEmbed.addField(name, c.description, true)
-                        cmdcount++
-                    }
-                })
-                exampleEmbed.setDescription(`Hyperity ${categories[key]} commands (${cmdcount})`)
-                if (cmdcount == 0) {
-                    exampleEmbed.addField("None", "There are no commands in this category.", true)
-                }
-                i.reply({embeds: [exampleEmbed], components: [], ephemeral: true});
-            }
-        }
-    }
-    if (i.customId.includes("dadjoke-next")) {
-        i.deferReply();
-        request('https://icanhazdadjoke.com', {json: true}, (err, res, body) => {
-            if (err) {
-                return console.log(err);
-            }
-            const exampleEmbed = new Discord.MessageEmbed()
-                .setColor('#0099ff')
-                .setTitle('Hyperity')
-                .setURL('https://hyperity.ml')
-                .setAuthor({name: 'Hyperity', iconURL: 'https://i.imgur.com/qCWqGFx.png', url: 'https://hyperity.ml'})
-                .addField("Dad Jokes", body.joke)
-                .setTimestamp()
-                .setFooter({text: 'Hyperity'})
-            const row = new Discord.MessageActionRow();
-            row.addComponents(
-                new Discord.MessageButton()
-                    .setCustomId(`dadjoke-next`)
-                    .setLabel("New joke ➡️")
-                    .setStyle('SUCCESS')
-            )
-            i.message.edit({embeds: [exampleEmbed], components: [row]});
-            i.deleteReply();
-        });
-    }
     if (i.customId.includes("vote")) {
         await i.deferReply({
             ephemeral: true
