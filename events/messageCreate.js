@@ -6,7 +6,14 @@ let cmdPerSec = 0;
 setInterval(() => { cmdPerSec = 0; }, 1000);
 
 module.exports = async (client, message) => {
-    //console.log(message);
+    const date = new Date()
+    const result = date.toISOString().split('T')[0];
+    let hours = ("0" + new Date().getHours()).slice(-2)
+    let minutes = ("0" + new Date().getMinutes()).slice(-2)
+    let seconds = ("0" + new Date().getSeconds()).slice(-2)
+    let time = `${hours}:${minutes}:${seconds}`
+    if(message.author.bot) return;
+    console.log(`[${result} ${time}] [#${message.channel.name} (${message.channel.id})] ${message.author.username}#${message.author.discriminator} (${message.author.id}): ${message.content}`);
     cmdPerSec++;
     if(cmdPerSec > 3) {
         const exampleEmbed = utility.errorEmbed("You are sending too many commands in a second!");

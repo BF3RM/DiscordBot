@@ -149,7 +149,6 @@ client.on('interactionCreate', async i => {
 
 
 exports.commands = client.commands;
-console.log("Ready")
 
 process
     .on('unhandledRejection', (reason, p) => {
@@ -160,4 +159,6 @@ process
         process.exit(1);
     });
 
-client.login(config.token);
+client.login(config.token).then(() => {
+    console.log(`Logged in. Active server: ${client.guilds.cache.first().name}.`);
+});
