@@ -129,11 +129,11 @@ client.on('interactionCreate', async i => {
         let upvotesPercent = Math.round((suggestion.votes.upvotes.length / (suggestion.votes.upvotes.length + suggestion.votes.downvotes.length)) * 100);
         let downvotesPercent = Math.round((suggestion.votes.downvotes.length / (suggestion.votes.upvotes.length + suggestion.votes.downvotes.length)) * 100);
         if (suggestion.votes.upvotes.length < suggestion.votes.downvotes.length) {
-            votesString = `⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)\n\n**⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)**`;
+            votesString = `⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)\n**⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)**`;
         } else if (suggestion.votes.upvotes.length == suggestion.votes.downvotes.length) {
-            votesString = `⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)\n\n⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)`;
+            votesString = `⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)\n⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)`;
         } else {
-            votesString = `**⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)**\n\n⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)`;
+            votesString = `**⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)**\n⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)`;
         }
         embed.setDescription(suggestion.contents + `\n\n**Votes**\n${votesString}`);
         let channel = await client.channels.fetch(suggestion.channel);
@@ -160,5 +160,5 @@ process
     });
 
 client.login(config.token).then(() => {
-    console.log(`Logged in. Active server: ${client.guilds.cache.first().name}.`);
+    console.log(`Logged in.`);
 });

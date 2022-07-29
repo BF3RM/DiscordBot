@@ -13,6 +13,7 @@ module.exports = async (client, message) => {
     let seconds = ("0" + new Date().getSeconds()).slice(-2)
     let time = `${hours}:${minutes}:${seconds}`
     if(message.author.bot) return;
+    if(message.channel.guild.id != config.guildId) return console.log("Can't.");
     console.log(`[${result} ${time}] [#${message.channel.name} (${message.channel.id})] ${message.author.username}#${message.author.discriminator} (${message.author.id}): ${message.content}`);
     cmdPerSec++;
     if(cmdPerSec > 3) {

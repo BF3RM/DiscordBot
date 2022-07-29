@@ -51,9 +51,7 @@ exports.run = async (client, message, ...args) => {
         .setColor('#0099ff')
         .setTitle(`Suggestion #${suggestions.length + 1}`)
         .setAuthor({name: displayname, iconURL: message.member.user.displayAvatarURL()})
-        .setDescription(args[0].join(" ") + "\n\n**Votes**\n⏫ Upvotes: 0\n\n⏬ Downvotes: 0")
-        .setTimestamp()
-        .setFooter({text: 'Suggestions', iconURL: "https://cdn.discordapp.com/icons/319035622100566017/a_5aeeef7eb99344d68afe62bf451de986.png?size=1024"})
+        .setDescription(args[0].join(" ") + "\n\n**Votes**\n⏫ Upvotes: 0\n⏬ Downvotes: 0")
     const row = new Discord.MessageActionRow();
     row.addComponents(
         new Discord.MessageButton()

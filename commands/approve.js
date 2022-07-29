@@ -88,13 +88,13 @@ exports.run = async (client, message, ...args) => {
     let upvotesPercent = Math.round((suggestion.votes.upvotes.length / (suggestion.votes.upvotes.length + suggestion.votes.downvotes.length)) * 100);
     let downvotesPercent = Math.round((suggestion.votes.downvotes.length / (suggestion.votes.upvotes.length + suggestion.votes.downvotes.length)) * 100);
     if (suggestion.votes.upvotes.length < suggestion.votes.downvotes.length) {
-        votesString = `⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)\n\n**⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)**`;
+        votesString = `⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)\n**⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)**`;
     } else if (suggestion.votes.upvotes.length == 0 && suggestion.votes.downvotes.length == 0) {
-        votesString = `⏫ Upvotes: ${suggestion.votes.upvotes.length} \n\n⏬ Downvotes: ${suggestion.votes.downvotes.length}`;
+        votesString = `⏫ Upvotes: ${suggestion.votes.upvotes.length} \n⏬ Downvotes: ${suggestion.votes.downvotes.length}`;
     } else if (suggestion.votes.upvotes.length == suggestion.votes.downvotes.length) {
-        votesString = `⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)\n\n⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)`;
+        votesString = `⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)\n⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)`;
     } else {
-        votesString = `**⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)**\n\n⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)`;
+        votesString = `**⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)**\n⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)`;
     }
 
     suggestion.description = suggestion.contents + `\n\n**Votes**\n${votesString}\n\n**Approved by**\n${displayname}\n**Reason**\n${reason}`
@@ -104,8 +104,6 @@ exports.run = async (client, message, ...args) => {
         .setTitle(`Suggestion #${suggestion.arrayIndex + 1}`)
         .setAuthor({name: displayname, iconURL: member.user.displayAvatarURL()})
         .setDescription(suggestion.description)
-        .setTimestamp()
-        .setFooter({text: 'Suggestions', iconURL: "https://cdn.discordapp.com/icons/319035622100566017/a_5aeeef7eb99344d68afe62bf451de986.png?size=1024"})
 
     let final = await client.channels.fetch(finalChannel);
 
