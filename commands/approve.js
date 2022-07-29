@@ -127,6 +127,8 @@ exports.run = async (client, message, ...args) => {
     const embed = utility.successEmbed("Suggestion approved!");
     let msg2 = await message.channel.send({embeds: [embed]});
     await member.send({embeds: [exampleEmbed]});
+    const logChannel = await client.channels.fetch(config.logsChannel);
+    logChannel.send({content: `Suggestion ${suggestion.arrayIndex+1} approved by ${displayname}! Reason: ${reason}`});
     sugMsg.delete();
     setTimeout(() => {
         msg2.delete();

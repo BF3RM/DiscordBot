@@ -1,5 +1,7 @@
 const Discord = require('discord.js');
 const utility = require('../utility.js')
+const config = require("../config.json");
+
 
 let running = false;
 
@@ -88,6 +90,10 @@ exports.run = async (client, message, ...args) => {
     suggestions.push(obj);
     message.delete();
     utility.saveSuggestions();
+
+    const logChannel = await client.channels.fetch(config.logsChannel);
+    logChannel.send({content: `New suggestion by ${message.author.tag}! Contents: ${args[0].join(" ")}`, files: files});
+
     running = false;
 }
 

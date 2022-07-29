@@ -88,6 +88,8 @@ exports.run = async (client, message, ...args) => {
 
     message.delete();
     utility.saveSuggestions();
+    const logChannel = await client.channels.fetch(config.logsChannel);
+    logChannel.send({content: `Suggestion ${suggestion.arrayIndex+1} implemented by ${displayname}!`});
     const embed1 = utility.successEmbed("Suggestion implemented!");
     let msg2 = await message.channel.send({embeds: [embed1]});
     setTimeout(() => {
