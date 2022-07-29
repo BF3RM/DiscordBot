@@ -139,7 +139,9 @@ client.on('interactionCreate', async i => {
         let channel = await client.channels.fetch(suggestion.channel);
         let msg = await channel.messages.fetch(suggestion.msg)
         msg.edit({embeds: [embed]});
-        replyEmbed = utility.successEmbed("Vote added.");
+        let vote = i.customId.split("-")[0];
+        vote = vote.charAt(0).toUpperCase() + vote.slice(1);;
+        replyEmbed = utility.successEmbed(`${vote} added.\n\n**Votes**\n` + votesString);
         i.editReply({embeds: [replyEmbed]});
         utility.saveSuggestions();
     }
