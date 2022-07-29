@@ -102,8 +102,12 @@ client.on('interactionCreate', async i => {
         });
         let index = i.customId.split("-")[1];
         let suggestion = suggestions[index];
+        let replyEmbed;
 
-        if (suggestion.votes.upvotes.includes(i.user.id) || suggestion.votes.downvotes.includes(i.user.id)) return i.editReply("You've already voted on this suggestion!")
+        if (suggestion.votes.upvotes.includes(i.user.id) || suggestion.votes.downvotes.includes(i.user.id)) {
+            replyEmbed = utility.errorEmbed("You have already voted on this suggestion.");
+            return i.editReply({embeds: [replyEmbed]})
+        }
         let guild = await client.guilds.fetch(config.guildId);
         let member = await guild.members.fetch(suggestion.suggestedBy);
 
@@ -135,7 +139,8 @@ client.on('interactionCreate', async i => {
         let channel = await client.channels.fetch(suggestion.channel);
         let msg = await channel.messages.fetch(suggestion.msg)
         msg.edit({embeds: [embed]});
-        i.editReply("Vote added!");
+        replyEmbed = utility.successEmbed("Vote added.");
+        i.editReply({embeds: [replyEmbed]});
         utility.saveSuggestions();
     }
 });

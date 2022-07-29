@@ -1,17 +1,13 @@
 const Discord = require('discord.js');
 const utility = require('../utility.js')
 
-function delay(time) {
-    return new Promise(resolve => setTimeout(resolve, time));
-}
-
 let running = false;
 
 let {suggestions, suggestionChannel, saveSuggestions} = require('../index.js');
 
 exports.run = async (client, message, ...args) => {
     while(running) {
-        await delay(10);
+        await utility.delay(10); //avoid spamming the channel
     }
 
     running = true;
