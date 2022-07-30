@@ -57,6 +57,7 @@ client.on('interactionCreate', async i => {
         }
 
         if (suggestion.votes.upvotes.includes(i.user.id) || suggestion.votes.downvotes.includes(i.user.id)) {
+            let vote = suggestion.votes.upvotes.includes(i.user.id) ? "Upvote" : "Downvote";
             replyEmbed = utility.errorEmbed(`You have already voted on this suggestion (${vote}).`);
             return i.editReply({embeds: [replyEmbed]})
         }
