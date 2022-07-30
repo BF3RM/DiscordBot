@@ -35,3 +35,8 @@ exports.successEmbed = (msg) => {
         .setFooter({text: 'Reality Mod', iconURL: "https://cdn.discordapp.com/icons/319035622100566017/a_5aeeef7eb99344d68afe62bf451de986.png?size=1024"})
         .addField("Success", msg)
 }
+
+exports.saveSuggestions = () => {
+    let { suggestions } = require('./index.js');
+    fs.writeFileSync("./suggestions.json", JSON.stringify(suggestions));
+}
