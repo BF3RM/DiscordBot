@@ -1,12 +1,10 @@
 const {Client, Intents, Collection} = require("discord.js");
 const Discord = require('discord.js');
 const fs = require('node:fs');
-const https = require('https')
 const config = require("./config.json");
 const suggestionChannel = config.suggestionsChannel;
 const finalChannel = config.finalChannel;
 const manageRoles = config.manageRoles;
-const request = require('request');
 const client = new Client({
     intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]
 });

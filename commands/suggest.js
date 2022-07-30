@@ -2,10 +2,9 @@ const Discord = require('discord.js');
 const utility = require('../utility.js')
 const config = require("../config.json");
 
-
 let running = false;
 
-let {suggestions, saveSuggestions} = require('../index.js');
+let {suggestions, suggestionChannel} = require('../index.js');
 
 exports.run = async (client, message, ...args) => {
     while(running) {
@@ -13,18 +12,17 @@ exports.run = async (client, message, ...args) => {
     }
 
     running = true;
-    if (message.channel.id != config.suggestionsChannel) {
-        if (args[0].length == 0) {
-            const exampleEmbed = utility.errorEmbed("You should use #suggest channel for suggestions!");
-            let msg = await message.channel.send({embeds: [exampleEmbed]});
-            message.delete();
-            setTimeout(() => {
-                msg.delete();
-            }, 5000);
-            running = false;
-            return;
-        }
+    if (message.channel.id != suggestionChannel) {
+        const exampleEmbed = utility.errorEmbed(`You must use the <#${suggestionChannel}> channel for suggestions!`);
+        let msg = await message.channel.send({embeds: [exampleEmbed]});
+        message.delete();
+        setTimeout(() => {
+            msg.delete();
+        }, 5000);
+        running = false;
+        return;
     }
+
     let displayname = message.member.nickname ? `${message.member.user.username}#${message.member.user.discriminator} (${message.member.nickname})` : `${message.member.user.username}#${message.member.user.discriminator}`;
     let obj = {
         suggestedBy: message.member.user.id.toString(),

@@ -1,12 +1,21 @@
 const Discord = require('discord.js');
 const utility = require('../utility.js')
-const {PermissionsBitField} = require('discord.js');
 const config = require("../config.json");
 
-let {suggestions, finalChannel, saveSuggestions, suggestionChannel, manageRoles} = require('../index.js');
+let {suggestions, suggestionChannel, manageRoles} = require('../index.js');
 
 exports.run = async (client, message, ...args) => {
-    if (message.channel.id != config.suggestionsChannel) return message.delete();
+    if (message.channel.id != suggestionChannel) {
+        const exampleEmbed = utility.errorEmbed(`You must use the <#${suggestionChannel}> channel for suggestions!`);
+        let msg = await message.channel.send({embeds: [exampleEmbed]});
+        message.delete();
+        setTimeout(() => {
+            msg.delete();
+        }, 5000);
+        running = false;
+        return;
+    }
+
 
     let pass = false;
 
