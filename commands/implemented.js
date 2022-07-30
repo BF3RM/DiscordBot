@@ -6,7 +6,7 @@ const config = require("../config.json");
 let {suggestions, finalChannel, saveSuggestions, suggestionChannel, manageRoles} = require('../index.js');
 
 exports.run = async (client, message, ...args) => {
-    if (message.channel.id != suggestionChannel) return message.delete();
+    if (message.channel.id != config.suggestionsChannel) return message.delete();
 
     let pass = false;
 

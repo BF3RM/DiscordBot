@@ -5,7 +5,7 @@ const config = require("../config.json");
 
 let running = false;
 
-let {suggestions, suggestionChannel, saveSuggestions} = require('../index.js');
+let {suggestions, saveSuggestions} = require('../index.js');
 
 exports.run = async (client, message, ...args) => {
     while(running) {
@@ -13,7 +13,7 @@ exports.run = async (client, message, ...args) => {
     }
 
     running = true;
-    if (message.channel.id != suggestionChannel) {
+    if (message.channel.id != config.suggestionsChannel) {
         if (args[0].length == 0) {
             const exampleEmbed = utility.errorEmbed("You should use #suggest channel for suggestions!");
             let msg = await message.channel.send({embeds: [exampleEmbed]});
