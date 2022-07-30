@@ -55,7 +55,7 @@ module.exports = async (client, message) => {
             fs.writeFileSync("./usedTechSupport.json", JSON.stringify(usedTechSupport));
             return;
         }
-        ;
+
 
         usedTechSupport.push(message.author.id);
         fs.writeFileSync("./usedTechSupport.json", JSON.stringify(usedTechSupport));

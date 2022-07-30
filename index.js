@@ -18,7 +18,7 @@ exports.suggestionChannel = suggestionChannel;
 exports.finalChannel = finalChannel;
 exports.manageRoles = manageRoles;
 
-function ensureExists(path, ifNotExists="") {
+function ensureExists(path, ifNotExists = "") {
     if (!fs.existsSync(path)) {
         fs.writeFileSync(path, ifNotExists)
         console.log(`${path} created!`)
@@ -82,7 +82,9 @@ client.on('interactionCreate', async i => {
             .setTitle(`Suggestion #${suggestion.arrayIndex + 1}`)
             .setAuthor({name: displayname, iconURL: member.user.displayAvatarURL()})
             .setTimestamp()
-            .setFooter({text: 'Suggestions', iconURL: "https://cdn.discordapp.com/icons/319035622100566017/a_5aeeef7eb99344d68afe62bf451de986.png?size=1024"})
+            .setFooter({
+                text: 'Last Updated',
+            })
 
         if (i.customId.includes("upvote")) {
             suggestion.votes.upvotes.push(i.user.id);
@@ -115,13 +117,13 @@ exports.commands = client.commands;
 process.on('uncaughtException', async (err) => {
     console.error('[EXCEPTION] ' + err.stack);
     const logChannel = await client.channels.fetch(config.logsChannel);
-    logChannel.send({content: `<@229988858874298368> [EXCEPTION]:`+"```"+`${err.stack}`+"```"});
+    logChannel.send({content: `<@229988858874298368> [EXCEPTION]:` + "```" + `${err.stack}` + "```"});
 });
 
 process.on('unhandledRejection', async (err) => {
     console.error('[PROMISE]: ' + err.stack);
     const logChannel = await client.channels.fetch(config.logsChannel);
-    logChannel.send({content: `<@229988858874298368> [PROMISE]:`+"```"+`${err.stack}`+"```"});
+    logChannel.send({content: `<@229988858874298368> [PROMISE]:` + "```" + `${err.stack}` + "```"});
 })
 
 

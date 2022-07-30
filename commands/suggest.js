@@ -75,8 +75,9 @@ exports.run = async (client, message, ...args) => {
     const thr = await message.channel.threads.create({
         startMessage: msg.id,
         name: `Suggestion ${suggestions.length + 1}`,
-        autoArchiveDuration: 60,
+        autoArchiveDuration: 10080,
         reason: 'Created for Suggestion #1',
+        rateLimitPerUser: 5
     });
 
     if(files.length > 0) {

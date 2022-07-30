@@ -127,6 +127,7 @@ exports.run = async (client, message, ...args) => {
     let sugThr = channel.threads.cache.find(x => x.name === `Suggestion ${suggestion.arrayIndex+1}`);
     await sugThr.send({embeds: [exampleEmbed]});
     await sugThr.setArchived(true);
+    await sugThr.setLocked(true);
 
     suggestion.msg = msg.id;
     suggestion.status = "approved";
