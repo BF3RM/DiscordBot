@@ -53,10 +53,16 @@ client.on('interactionCreate', async i => {
         let vote = i.customId.split("-")[0];
         vote = vote.charAt(0).toUpperCase() + vote.slice(1);
 
+        if (suggestion.suggestedBy == i.user.id) {
+            replyEmbed = utility.errorEmbed(`You cannot vote on your own suggestion.`);
+            return i.editReply({embeds: [replyEmbed]})
+        }
+
         if (suggestion.votes.upvotes.includes(i.user.id) || suggestion.votes.downvotes.includes(i.user.id)) {
             replyEmbed = utility.errorEmbed(`You have already voted on this suggestion (${vote}).`);
             return i.editReply({embeds: [replyEmbed]})
         }
+
         let guild = await client.guilds.fetch(config.guildId);
         let member = await guild.members.fetch(suggestion.suggestedBy);
 
