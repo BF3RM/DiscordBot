@@ -106,5 +106,5 @@ process
     });
 
 client.login(config.token).then(() => {
-    console.log(`Logged in.`);
+    console.log(`Logged in. `);
 });
