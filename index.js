@@ -103,11 +103,13 @@ client.on('interactionCreate', async i => {
 exports.commands = client.commands;
 
 process
-    .on('unhandledRejection', (reason, p) => {
+    .on('unhandledRejection', async (reason, p) => {
         console.error(reason, 'Unhandled Rejection at Promise', p);
     })
-    .on('uncaughtException', err => {
+    .on('uncaughtException', async err => {
         console.error(err, 'Uncaught Exception thrown');
+        const logChannel = await client.channels.fetch(config.logsChannel);
+        logChannel.send({content: `${err}`});
         process.exit(1);
     });
 
