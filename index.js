@@ -102,16 +102,18 @@ client.on('interactionCreate', async i => {
 
 exports.commands = client.commands;
 
-process
-    .on('unhandledRejection', async (reason, p) => {
-        console.error(reason, 'Unhandled Rejection at Promise', p);
-    })
-    .on('uncaughtException', async err => {
-        console.error(err, 'Uncaught Exception thrown');
-        const logChannel = await client.channels.fetch(config.logsChannel);
-        logChannel.send({content: `${err}`});
-        process.exit(1);
-    });
+process.on('uncaughtException', async (err) => {
+    console.error('[EXCEPTION] ' + err.stack);
+    const logChannel = await client.channels.fetch(config.logsChannel);
+    logChannel.send({content: `<@229988858874298368> [EXCEPTION]:`+"```"+`${err.stack}`+"```"});
+});
+
+process.on('unhandledRejection', async (err) => {
+    console.error('[PROMISE]: ' + err.stack);
+    const logChannel = await client.channels.fetch(config.logsChannel);
+    logChannel.send({content: `<@229988858874298368> [PROMISE]:`+"```"+`${err.stack}`+"```"});
+})
+
 
 client.login(config.token).then(() => {
     console.log(`Logged in. `);
