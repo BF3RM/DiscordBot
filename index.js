@@ -18,6 +18,16 @@ exports.suggestionChannel = suggestionChannel;
 exports.finalChannel = finalChannel;
 exports.manageRoles = manageRoles;
 
+function ensureExists(path, ifNotExists="") {
+    if (!fs.existsSync(path)) {
+        fs.writeFileSync(path, ifNotExists)
+        console.log(`${path} created!`)
+    }
+}
+
+ensureExists("./suggestions.json", JSON.stringify([]));
+ensureExists("./usedTechSupport.json", JSON.stringify([]));
+
 let suggestions = JSON.parse(fs.readFileSync("./suggestions.json", "utf8"));
 exports.suggestions = suggestions;
 
