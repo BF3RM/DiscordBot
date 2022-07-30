@@ -62,6 +62,21 @@ exports.run = async (client, message, ...args) => {
         return;
     }
 
+    try {
+        let channel = await client.channels.fetch(suggestion.channel);
+        let sugMsg = await channel.messages.fetch(suggestion.msg);
+    }
+    catch(err) {
+        const exampleEmbed = utility.errorEmbed("Suggestion not found!");
+        let msg = await message.channel.send({embeds: [exampleEmbed]});
+        message.delete();
+        setTimeout(() => {
+            msg.delete();
+        }, 5000);
+        return;
+    }
+
+
     if(suggestion.status != "pending") {
         const exampleEmbed = utility.errorEmbed("This suggestion has already been approved or rejected!");
         let msg = await message.channel.send({embeds: [exampleEmbed]});
