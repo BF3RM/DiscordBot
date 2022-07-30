@@ -13,6 +13,7 @@ module.exports = async (client, message) => {
     let seconds = ("0" + new Date().getSeconds()).slice(-2)
     let time = `${hours}:${minutes}:${seconds}`
     if(message.author.bot) return;
+    let dontRemove = false;
     if(message.channel.guild.id != config.guildId) return console.log("Can't.");
     console.log(`[${result} ${time}] [#${message.channel.name} (${message.channel.id})] ${message.author.username}#${message.author.discriminator} (${message.author.id}): ${message.content}`);
     cmdPerSec++;
@@ -39,17 +40,19 @@ module.exports = async (client, message) => {
         }
 
         if(pass == true) {
-            return;
+            dontRemove = true;
         }
 
         if (!message.content.includes("!suggest") && !message.content.includes("!approve") && !message.content.includes("!deny") && !message.content.includes("!implemented")) {
-            const exampleEmbed = utility.errorEmbed("You must use !suggest!");
-            let msg = await message.channel.send({embeds: [exampleEmbed]});
-            message.delete();
-            setTimeout(() => {
-                msg.delete();
-            }, 5000);
-            return;
+            if(!dontRemove) {
+                const exampleEmbed = utility.errorEmbed("You must use !suggest!");
+                let msg = await message.channel.send({embeds: [exampleEmbed]});
+                message.delete();
+                setTimeout(() => {
+                    msg.delete();
+                }, 5000);
+                return;
+            }
         }
     }
     if (message.content.indexOf(client.config.prefix) !== 0) return;
