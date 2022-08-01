@@ -91,7 +91,7 @@ exports.run = async (client, message, ...args) => {
     utility.saveSuggestions();
 
     const logChannel = await client.channels.fetch(config.logsChannel);
-    logChannel.send({content: `New suggestion by ${message.author.tag}! Contents: ${args[0].join(" ")}`, files: files});
+    logChannel.send({content: `New suggestion by ${message.author.tag}! Contents: \n${args[0].join(" ")}`, files: files});
 
     running = false;
 }
