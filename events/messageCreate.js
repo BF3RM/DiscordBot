@@ -50,15 +50,11 @@ module.exports = async (client, message) => {
 
     if (message.channel.id == config.supportChannel) {
         if (usedTechSupport.includes(message.author.id)) return;
-        if (pass) {
-            usedTechSupport.push(message.author.id);
-            fs.writeFileSync("./usedTechSupport.json", JSON.stringify(usedTechSupport));
-            return;
-        }
-
 
         usedTechSupport.push(message.author.id);
         fs.writeFileSync("./usedTechSupport.json", JSON.stringify(usedTechSupport));
+
+        if (pass || message.member._roles.includes(config.techSupportRole)) return;
 
         const exampleEmbed = utility.infoEmbed(`Hello, <@${message.member.user.id}>! Make sure to check out <#${config.solutionsChannel}> for solutions to most technical problems!`);
         await message.reply({embeds: [exampleEmbed]});
