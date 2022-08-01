@@ -101,7 +101,7 @@ exports.run = async (client, message, ...args) => {
 
     suggestion.status = "implemented";
 
-    suggestion.implementedBy = displayname;
+    suggestion.implementedBy = message.author.tag;
 
     await member.send({embeds: [embed]});
 
@@ -112,7 +112,7 @@ exports.run = async (client, message, ...args) => {
     message.delete();
     utility.saveSuggestions();
     const logChannel = await client.channels.fetch(config.logsChannel);
-    logChannel.send({content: `Suggestion ${suggestion.arrayIndex+1} implemented by ${displayname}!`});
+    logChannel.send({content: `Suggestion ${suggestion.arrayIndex+1} implemented by ${message.author.tag}!`});
     const embed1 = utility.successEmbed("Suggestion implemented!");
     let msg2 = await message.channel.send({embeds: [embed1]});
     setTimeout(() => {

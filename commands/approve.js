@@ -131,7 +131,7 @@ exports.run = async (client, message, ...args) => {
 
     suggestion.msg = msg.id;
     suggestion.status = "approved";
-    suggestion.approvedBy = displayname;
+    suggestion.approvedBy = message.author.tag;
     suggestion.approveReason = reason;
     suggestion.channel = finalChannel;
 
@@ -141,7 +141,7 @@ exports.run = async (client, message, ...args) => {
     let msg2 = await message.channel.send({embeds: [embed]});
     await member.send({embeds: [exampleEmbed]});
     const logChannel = await client.channels.fetch(config.logsChannel);
-    logChannel.send({content: `Suggestion ${suggestion.arrayIndex+1} approved by ${displayname}! Reason: ${reason}`});
+    logChannel.send({content: `Suggestion ${suggestion.arrayIndex+1} approved by ${message.author.tag}! Reason: ${reason}`});
     sugMsg.delete();
     setTimeout(() => {
         msg2.delete();
