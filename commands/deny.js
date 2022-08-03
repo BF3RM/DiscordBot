@@ -129,10 +129,15 @@ exports.run = async (client, message, ...args) => {
 
     const msg = await final.send({embeds: [exampleEmbed]});
 
-    let sugThr = channel.threads.cache.find(x => x.name === `Suggestion ${suggestion.arrayIndex+1}`);
-    await sugThr.send({embeds: [exampleEmbed]});
-    await sugThr.setArchived(true);
-    await sugThr.setLocked(true);
+    try {
+        let sugThr = channel.threads.cache.find(x => x.name === `Suggestion ${suggestion.arrayIndex+1}`);
+        await sugThr.send({embeds: [exampleEmbed]});
+        await sugThr.setArchived(true);
+        await sugThr.setLocked(true);
+    }
+    catch (e) {
+        console.log(`Error while handling thread: ${e.stack}`);
+    }
 
     suggestion.msg = msg.id;
     suggestion.status = "denied";
