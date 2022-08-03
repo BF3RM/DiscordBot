@@ -76,7 +76,7 @@ exports.run = async (client, message, ...args) => {
         startMessage: msg.id,
         name: `Suggestion ${suggestions.length + 1}`,
         autoArchiveDuration: 10080,
-        reason: 'Created for Suggestion #1',
+        reason: `Created for Suggestion ${suggestions.length + 1}`,
         rateLimitPerUser: 5
     });
 
