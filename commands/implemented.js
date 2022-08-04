@@ -96,7 +96,7 @@ exports.run = async (client, message, ...args) => {
         .setTimestamp()
         .setFooter({text: 'Suggestions', iconURL: "https://cdn.discordapp.com/icons/319035622100566017/a_5aeeef7eb99344d68afe62bf451de986.png?size=1024"})
 
-    embed.setDescription(suggestion.description + `\n\n**Implemented by**\n${displayname}`)
+    embed.setDescription(suggestion.description + `\n\n**Implemented by**\n${message.author.tag}`)
     embed.setColor("GREY")
 
     suggestion.status = "implemented";

@@ -96,7 +96,6 @@ exports.run = async (client, message, ...args) => {
     let guild = await client.guilds.fetch(config.guildId);
     let member = await guild.members.fetch(suggestion.suggestedBy);
 
-
     let displayname = member.nickname ? `${member.user.username}#${member.user.discriminator} (${member.nickname})` : `${member.user.username}#${member.user.discriminator}`;
 
     let upvotesPercent = Math.round((suggestion.votes.upvotes.length / (suggestion.votes.upvotes.length + suggestion.votes.downvotes.length)) * 100);
@@ -114,7 +113,7 @@ exports.run = async (client, message, ...args) => {
         votesString = `**⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)**\n⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)`;
     }
 
-    suggestion.description = suggestion.contents+`\n\n**Votes**\n${votesString}\n\n**Denied by**\n${displayname}\n**Reason**\n${reason}`
+    suggestion.description = suggestion.contents + `\n\n**Votes**\n${votesString}\n\n**Denied by**\n${message.author.tag}\n**Reason**\n${reason}`
 
     const exampleEmbed = new Discord.MessageEmbed()
         .setColor("RED")

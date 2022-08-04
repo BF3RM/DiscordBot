@@ -109,7 +109,7 @@ exports.run = async (client, message, ...args) => {
         votesString = `**⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)**\n⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)`;
     }
 
-    suggestion.description = suggestion.contents + `\n\n**Votes**\n${votesString}\n\n**Approved by**\n${displayname}\n**Reason**\n${reason}`
+    suggestion.description = suggestion.contents + `\n\n**Votes**\n${votesString}\n\n**Approved by**\n${message.author.tag}\n**Reason**\n${reason}`
 
     const exampleEmbed = new Discord.MessageEmbed()
         .setColor("GREEN")
