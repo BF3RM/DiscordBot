@@ -1,6 +1,7 @@
 const {Client, Intents, Collection} = require("discord.js");
 const Discord = require('discord.js');
 const fs = require('node:fs');
+const os = require('os');
 const config = require("./config.json");
 const suggestionChannel = config.suggestionsChannel;
 const finalChannel = config.finalChannel;
@@ -51,9 +52,13 @@ for (const file of commands) {
     const commandName = file.split(".")[0];
     const command = require(`./commands/${file}`);
     if (!categories.includes(command.category)) categories.push(command.category)
-    console.log(`Attempting to load command ${commandName}`);
-    client.commands.set(commandName, command);
-    console.log(`Loaded command ${commandName}`)
+    try {
+        client.commands.set(commandName, command);
+        console.log(`Command ${commandName} loaded!`);
+    }
+    catch(e) {
+        console.log(`Error loading command ${commandName}: ${e}`);
+    }
 }
 
 client.on('interactionCreate', async i => {
@@ -165,6 +170,6 @@ client.login(config.token).then(async () => {
         await utility.delay(10);
     }
     const logChannel = await client.channels.fetch(config.logsChannel);
-    logChannel.send({content: `Bot loaded. Version: ${generateChecksum(checksums)}`});
+    logChannel.send({content: `<@229988858874298368> bot logged in from ${os.hostname()}. Version: ${generateChecksum(checksums)}`});
     console.log(`Logged in. Version: ${generateChecksum(checksums)}`);
 });
