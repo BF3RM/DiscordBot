@@ -136,10 +136,35 @@ process.on('unhandledRejection', async (err) => {
 
 
 client.login(config.token).then(async () => {
-    fs.readFile('./index.js', async (err, data) => {
-        var checksum = generateChecksum(data);
-        const logChannel = await client.channels.fetch(config.logsChannel);
-        logChannel.send({content: `Bot loaded. Version: ${checksum}`});
-    });
-    console.log(`Logged in. `);
+    let checksums = "";
+    let pass = false;
+    const files = await fs.readdirSync("./");
+    for (const file of files) {
+        if(file.endsWith(".js")) {
+            checksums += fs.statSync(`./${file}`).size;
+        }
+        else if(fs.lstatSync(file).isDirectory()) {
+            const files = await fs.readdirSync(`./${file}`);
+            let folder = file;
+            for (const file of files) {
+                if(folder == "node_modules") break;
+                else if(file.endsWith(".js")) {
+                    checksums += fs.statSync(`./${folder}/${file}`).size;
+                }
+            }
+        }
+    }
+    let checksumLength;
+    setInterval(()=>{
+        if(checksumLength == checksums.length) {
+            pass = true;
+        }
+    }, 1000)
+    while(!pass) {
+        checksumLength = checksums.length;
+        await utility.delay(10);
+    }
+    const logChannel = await client.channels.fetch(config.logsChannel);
+    logChannel.send({content: `Bot loaded. Version: ${generateChecksum(checksums)}`});
+    console.log(`Logged in. Version: ${generateChecksum(checksums)}`);
 });
