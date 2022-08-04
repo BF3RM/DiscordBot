@@ -85,19 +85,10 @@ client.on('interactionCreate', async i => {
             return i.editReply({embeds: [replyEmbed]})
         }
 
-        let guild = await client.guilds.fetch(config.guildId);
-        let member = await guild.members.fetch(suggestion.suggestedBy);
+        let channel = await client.channels.fetch(suggestion.channel);
+        let msg = await channel.messages.fetch(suggestion.msg)
 
-        let displayname = member.nickname ? `${member.user.username}#${member.user.discriminator} (${member.nickname})` : `${member.user.username}#${member.user.discriminator}`;
-
-        let embed = new Discord.MessageEmbed()
-            .setColor('#0099ff')
-            .setTitle(`Suggestion #${suggestion.arrayIndex + 1}`)
-            .setAuthor({name: displayname, iconURL: member.user.displayAvatarURL()})
-            .setTimestamp()
-            .setFooter({
-                text: 'Last Updated',
-            })
+        let embed = msg.embeds[0];
 
         if (i.customId.includes("upvote")) {
             suggestion.votes.upvotes.push(i.user.id);
@@ -115,8 +106,6 @@ client.on('interactionCreate', async i => {
             votesString = `**⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)**\n⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)`;
         }
         embed.setDescription(suggestion.contents + `\n\n**Votes**\n${votesString}`);
-        let channel = await client.channels.fetch(suggestion.channel);
-        let msg = await channel.messages.fetch(suggestion.msg)
         msg.edit({embeds: [embed]});
         replyEmbed = utility.successEmbed(`${vote} added.\n\n**Votes**\n` + votesString);
         i.editReply({embeds: [replyEmbed]});
