@@ -9,6 +9,14 @@ const client = new Client({
     intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]
 });
 const utility = require('./utility.js');
+const crypto = require('crypto');
+
+function generateChecksum(str, algorithm, encoding) {
+    return crypto
+        .createHash(algorithm || 'md5')
+        .update(str, 'utf8')
+        .digest(encoding || 'hex');
+}
 
 client.config = config;
 client.commands = new Collection();
@@ -127,6 +135,11 @@ process.on('unhandledRejection', async (err) => {
 })
 
 
-client.login(config.token).then(() => {
+client.login(config.token).then(async () => {
+    fs.readFile('./index.js', async (err, data) => {
+        var checksum = generateChecksum(data);
+        const logChannel = await client.channels.fetch(config.logsChannel);
+        logChannel.send({content: `Bot loaded. Version: ${checksum}`});
+    });
     console.log(`Logged in. `);
 });
