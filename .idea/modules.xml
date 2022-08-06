@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Hyperity.iml" filepath="$PROJECT_DIR$/.idea/Hyperity.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/RM-Bot.iml" filepath="$PROJECT_DIR$/.idea/RM-Bot.iml" />
     </modules>
   </component>
 </project>
