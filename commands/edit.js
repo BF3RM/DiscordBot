@@ -1,133 +1,120 @@
-const Discord = require('discord.js');
 const utility = require('../utility.js')
-const config = require("../config.json");
 
-let {suggestions, suggestionChannel, manageRoles} = require('../index.js');
+const { SlashCommandBuilder, PermissionsBitField, EmbedBuilder } = require('discord.js');
 
-exports.run = async (client, message, ...args) => {
-    if (message.channel.id != suggestionChannel) {
-        const exampleEmbed = utility.errorEmbed(`You must use the <#${suggestionChannel}> channel for suggestions!`);
-        let msg = await message.channel.send({embeds: [exampleEmbed]});
-        message.delete();
-        setTimeout(() => {
-            msg.delete();
-        }, 5000);
-        running = false;
-        return;
-    }
+module.exports = {
+    data: new SlashCommandBuilder()
+        .setName('edit')
+        .setDescription('Edits a suggestion')
+        .addNumberOption(option =>
+            option.setName('id')
+                .setDescription("The ID of the suggestion")
+                .setRequired(true))
+        .addStringOption(option =>
+            option.setName('message')
+                .setDescription("The new message")
+                .setRequired(true))
+        .addAttachmentOption(option =>
+            option.setName('image')
+                .setDescription("The new image")
+                .setRequired(false)),
+    async execute(client, interaction) {
+        const config = client.config;
+        await interaction.deferReply({ephemeral: true});
+        let member = interaction.member;
+        if (interaction.channel.id !== config.suggestionsChannel) {
+            const exampleEmbed = utility.errorEmbed(`You must use the <#${config.suggestionsChannel}> channel for suggestions!`);
+            interaction.editReply({embeds: [exampleEmbed], ephemeral: true});
+            return;
+        }
 
-    let pass = false;
+        let pass = false;
 
-    manageRoles.forEach(role => {
-        if (message.member._roles.includes(role)) {
+        config.manageRoles.forEach(role => {
+            if (member._roles.includes(role)) {
+                pass = true;
+            }
+        });
+
+        if (member.permissions.has([PermissionsBitField.Flags.Administrator])) {
             pass = true;
         }
-    });
 
-    if (message.member.permissions.has("ADMINISTRATOR")) {
-        pass = true;
-    }
+        if (!interaction.options.getNumber("id")) {
+            const exampleEmbed = utility.errorEmbed(`You must specify an ID!`);
+            interaction.editReply({embeds: [exampleEmbed], ephemeral: true});
+            return;
+        }
 
-    if (args[0].length == 0) {
-        const exampleEmbed = utility.errorEmbed("You must specify an ID!");
-        let msg = await message.channel.send({embeds: [exampleEmbed]});
-        message.delete();
-        setTimeout(() => {
-            msg.delete();
-        }, 5000);
-        return;
-    }
+        let suggestion = client.suggestions[interaction.options.getNumber("id") - 1];
+        if (!suggestion) {
+            const exampleEmbed = utility.errorEmbed(`That ID does not exist!`);
+            interaction.editReply({embeds: [exampleEmbed], ephemeral: true});
+            return;
+        }
 
-    let suggestion = suggestions[args[0][0] - 1];
-    if (!suggestion) {
-        const exampleEmbed = utility.errorEmbed("That ID does not exist!");
-        let msg = await message.channel.send({embeds: [exampleEmbed]});
-        message.delete();
-        setTimeout(() => {
-            msg.delete();
-        }, 5000);
-        return;
-    }
+        if(interaction.user.id !== suggestion.suggestedBy || !pass) {
+            const exampleEmbed = utility.errorEmbed(`You can only edit your own suggestions!`);
+            interaction.editReply({embeds: [exampleEmbed], ephemeral: true});
+            return;
+        }
 
-    try {
-        let channel = await client.channels.fetch(suggestion.channel);
-        let sugMsg = await channel.messages.fetch(suggestion.msg);
-    } catch (err) {
-        const exampleEmbed = utility.errorEmbed("Suggestion not found!");
-        let msg = await message.channel.send({embeds: [exampleEmbed]});
-        message.delete();
-        setTimeout(() => {
-            msg.delete();
-        }, 5000);
-        return;
-    }
+        let channel;
+        let sugMsg;
 
-    if (suggestion.suggestedBy != message.author.id || !pass) {
-        const exampleEmbed = utility.errorEmbed("You can't edit this suggestion!");
-        let msg = await message.channel.send({embeds: [exampleEmbed]});
-        message.delete();
-        setTimeout(() => {
-            msg.delete();
-        }, 5000);
-        return;
-    }
+        try {
+            channel = await client.channels.fetch(suggestion.channel);
+            sugMsg = await channel.messages.fetch(suggestion.msg);
+        }
+        catch(err) {
+            const exampleEmbed = utility.errorEmbed(`Suggestion not found!`);
+            interaction.editReply({embeds: [exampleEmbed], ephemeral: true});
+            console.log(err);
+            return;
+        }
 
-    if (suggestion.status != "pending") {
-        const exampleEmbed = utility.errorEmbed("This suggestion has already been approved or rejected!");
-        let msg = await message.channel.send({embeds: [exampleEmbed]});
-        message.delete();
-        setTimeout(() => {
-            msg.delete();
-        }, 5000);
-        return;
-    }
+        if (suggestion.status !== "pending") {
+            const exampleEmbed = utility.errorEmbed(`This suggestion has already been approved or rejected!`);
+            interaction.editReply({embeds: [exampleEmbed], ephemeral: true});
+            return;
+        }
 
-    suggestion.contents = args[0].join(" ");
+        let votesString;
+        let upvotesPercent = Math.round((suggestion.votes.upvotes.length / (suggestion.votes.upvotes.length + suggestion.votes.downvotes.length)) * 100);
+        let downvotesPercent = Math.round((suggestion.votes.downvotes.length / (suggestion.votes.upvotes.length + suggestion.votes.downvotes.length)) * 100);
+        if (suggestion.votes.upvotes.length < suggestion.votes.downvotes.length) {
+            votesString = `⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)\n**⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)**`;
+        } else if (suggestion.votes.upvotes.length === 0 && suggestion.votes.downvotes.length === 0) {
+            votesString = `⏫ Upvotes: ${suggestion.votes.upvotes.length} \n⏬ Downvotes: ${suggestion.votes.downvotes.length}`;
+        } else if (suggestion.votes.upvotes.length === suggestion.votes.downvotes.length) {
+            votesString = `⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)\n⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)`;
+        } else {
+            votesString = `**⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)**\n⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)`;
+        }
 
-    let guild = await client.guilds.fetch(config.guildId);
-    let member = await guild.members.fetch(suggestion.suggestedBy);
+        const date = new Date();
+        const result = date.toISOString().split('T')[0];
+        let hours = ("0" + new Date().getHours()).slice(-2)
+        let minutes = ("0" + new Date().getMinutes()).slice(-2)
+        let seconds = ("0" + new Date().getSeconds()).slice(-2)
+        let time = `${hours}:${minutes}:${seconds}`
 
-    let displayname = member.nickname ? `${member.user.username}#${member.user.discriminator} (${member.nickname})` : `${member.user.username}#${member.user.discriminator}`;
+        let iEmbed = EmbedBuilder.from(sugMsg.embeds[0]);
 
-    let msgembed = new Discord.MessageEmbed()
-        .setColor('#0099ff')
-        .setTitle(`Suggestion #${suggestion.arrayIndex + 1}`)
-        .setAuthor({name: displayname, iconURL: member.user.displayAvatarURL()})
-        .setTimestamp()
-        .setFooter({
-            text: 'Last Updated',
-        })
+        iEmbed.setDescription(interaction.options.getString("message") + `\n\n**Votes**\n${votesString}\n\n**Last edit by**\n${interaction.user.tag} at ${result} ${time}`);
 
-    let votesString = "";
-    let upvotesPercent = Math.round((suggestion.votes.upvotes.length / (suggestion.votes.upvotes.length + suggestion.votes.downvotes.length)) * 100);
-    let downvotesPercent = Math.round((suggestion.votes.downvotes.length / (suggestion.votes.upvotes.length + suggestion.votes.downvotes.length)) * 100);
-    if (suggestion.votes.upvotes.length < suggestion.votes.downvotes.length) {
-        votesString = `⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)\n**⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)**`;
-    } else if (suggestion.votes.upvotes.length == suggestion.votes.downvotes.length) {
-        votesString = `⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)\n⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)`;
-    } else {
-        votesString = `**⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)**\n⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)`;
-    }
+        let files = await interaction.options.getAttachment("image");
 
-    msgembed.setDescription(suggestion.contents + `\n\n**Votes**\n${votesString}`);
-    let channel = await client.channels.fetch(suggestion.channel);
-    let msg = await channel.messages.fetch(suggestion.msg)
-    msg.edit({embeds: [msgembed]});
+        if (files) iEmbed.setImage(files.url);
+        await sugMsg.edit({embeds: [iEmbed]});
 
-    message.delete();
-    utility.saveSuggestions();
-    const embed = utility.successEmbed("Suggestion edited!");
-    let msg2 = await message.channel.send({embeds: [embed]});
-    await member.send({embeds: [exampleEmbed]});
-    const logChannel = await client.channels.fetch(config.logsChannel);
-    logChannel.send({content: `Suggestion ${suggestion.arrayIndex + 1} edited by ${message.author.tag}! New contents: ${suggestion.contents}`});
-    sugMsg.delete();
-    setTimeout(() => {
-        msg2.delete();
-    }, 5000);
-}
+        suggestion.editedBy = interaction.user.tag;
+        suggestion.editedAt = `${result} ${time}`;
 
-exports.name = "edit";
-exports.description = "Edit a suggestion";
-exports.args = "[message]";
-exports.category = "suggestions";
+        client.saveSuggestions();
+        const embed = utility.successEmbed("Suggestion edited!");
+        await interaction.editReply({embeds: [embed], ephemeral: true});
+        const logChannel = await client.channels.fetch(config.logsChannel);
+        logChannel.send({content: `Suggestion ${suggestion.arrayIndex+1} edited ${interaction.user.tag}! New contents: ${interaction.options.getString("message")}`});
+    },
+};

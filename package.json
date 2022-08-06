@@ -13,7 +13,7 @@
     "@discordjs/rest": "^0.3.0",
     "child-process-async": "^1.0.1",
     "discord-api-types": "^0.27.3",
-    "discord.js": "^13.6.0",
+    "discord.js": "^14.1.2",
     "request": "^2.88.2"
   }
 }

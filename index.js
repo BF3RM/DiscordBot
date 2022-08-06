@@ -1,16 +1,16 @@
-const {Client, Intents, Collection} = require("discord.js");
-const Discord = require('discord.js');
+const {Client, GatewayIntentBits, Partials, Collection, InteractionType, EmbedBuilder} = require('discord.js');
 const fs = require('node:fs');
 const os = require('os');
 const config = require("./config.json");
-const suggestionChannel = config.suggestionsChannel;
-const finalChannel = config.finalChannel;
-const manageRoles = config.manageRoles;
-const client = new Client({
-    intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]
-});
+const client = new Client({intents: [GatewayIntentBits.Guilds], partials: [Partials.Channel]});
 const utility = require('./utility.js');
 const crypto = require('crypto');
+const {REST} = require('@discordjs/rest');
+const {Routes} = require('discord-api-types/v10');
+const {token} = require('./config.json');
+client.saveSuggestions = () => {
+    fs.writeFileSync("./suggestions.json", JSON.stringify(client.suggestions));
+}
 
 function generateChecksum(str, algorithm, encoding) {
     return crypto
@@ -23,9 +23,6 @@ client.config = config;
 client.commands = new Collection();
 let categories = [];
 exports.categories = categories;
-exports.suggestionChannel = suggestionChannel;
-exports.finalChannel = finalChannel;
-exports.manageRoles = manageRoles;
 
 function ensureExists(path, ifNotExists = "") {
     if (!fs.existsSync(path)) {
@@ -37,8 +34,7 @@ function ensureExists(path, ifNotExists = "") {
 ensureExists("./suggestions.json", JSON.stringify([]));
 ensureExists("./usedTechSupport.json", JSON.stringify([]));
 
-let suggestions = JSON.parse(fs.readFileSync("./suggestions.json", "utf8"));
-exports.suggestions = suggestions;
+client.suggestions = JSON.parse(fs.readFileSync("./suggestions.json", "utf8"));
 
 const events = fs.readdirSync("./events").filter(file => file.endsWith(".js"));
 for (const file of events) {
@@ -51,30 +47,41 @@ const commands = fs.readdirSync("./commands").filter(file => file.endsWith(".js"
 for (const file of commands) {
     const commandName = file.split(".")[0];
     const command = require(`./commands/${file}`);
-    if (!categories.includes(command.category)) categories.push(command.category)
     try {
-        client.commands.set(commandName, command);
+        client.commands.set(command.data.name, command);
         console.log(`Command ${commandName} loaded!`);
-    }
-    catch(e) {
-        console.log(`Error loading command ${commandName}: ${e}`);
+    } catch (e) {
+        console.log(`Error loading command ${commandName}: ${e.stack}`);
     }
 }
 
 client.on('interactionCreate', async i => {
+    console.log(`Interaction by ${i.user.tag} received! (${i.type})`);
+    if (i.type === InteractionType.ApplicationCommand) {
+        const command = client.commands.get(i.commandName);
+
+        if (!command) return;
+
+        try {
+            await command.execute(client, i);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     if (!i.isButton()) return;
     if (i.customId.includes("vote")) {
         await i.deferReply({
             ephemeral: true
         });
         let index = i.customId.split("-")[1];
-        let suggestion = suggestions[index];
+        let suggestion = client.suggestions[index];
         let replyEmbed;
 
         let vote = i.customId.split("-")[0];
         vote = vote.charAt(0).toUpperCase() + vote.slice(1);
 
-        if (suggestion.suggestedBy == i.user.id) {
+        if (suggestion.suggestedBy === i.user.id) {
             replyEmbed = utility.errorEmbed(`You cannot vote on your own suggestion.`);
             return i.editReply({embeds: [replyEmbed]})
         }
@@ -88,28 +95,33 @@ client.on('interactionCreate', async i => {
         let channel = await client.channels.fetch(suggestion.channel);
         let msg = await channel.messages.fetch(suggestion.msg)
 
-        let embed = msg.embeds[0];
+        let embed = EmbedBuilder.from(msg.embeds[0]);
 
         if (i.customId.includes("upvote")) {
             suggestion.votes.upvotes.push(i.user.id);
         } else {
             suggestion.votes.downvotes.push(i.user.id);
         }
-        let votesString = "";
+        let votesString;
         let upvotesPercent = Math.round((suggestion.votes.upvotes.length / (suggestion.votes.upvotes.length + suggestion.votes.downvotes.length)) * 100);
         let downvotesPercent = Math.round((suggestion.votes.downvotes.length / (suggestion.votes.upvotes.length + suggestion.votes.downvotes.length)) * 100);
         if (suggestion.votes.upvotes.length < suggestion.votes.downvotes.length) {
             votesString = `⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)\n**⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)**`;
-        } else if (suggestion.votes.upvotes.length == suggestion.votes.downvotes.length) {
+        } else if (suggestion.votes.upvotes.length === suggestion.votes.downvotes.length) {
             votesString = `⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)\n⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)`;
         } else {
             votesString = `**⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)**\n⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)`;
         }
-        embed.setDescription(suggestion.contents + `\n\n**Votes**\n${votesString}`);
+        if(suggestion.editedBy) {
+            embed.setDescription(`${votesString}\n\n**Last edit by**\n${suggestion.editedBy} at ${suggestion.editedAt}`);
+        }
+        else {
+            embed.setDescription(suggestion.contents + `\n\n**Votes**\n${votesString}`);
+        }
         msg.edit({embeds: [embed]});
         replyEmbed = utility.successEmbed(`${vote} added.\n\n**Votes**\n` + votesString);
         i.editReply({embeds: [replyEmbed]});
-        utility.saveSuggestions();
+        client.saveSuggestions();
     }
 });
 
@@ -130,31 +142,55 @@ process.on('unhandledRejection', async (err) => {
 
 
 client.login(config.token).then(async () => {
+    const commands = [];
+    const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+
+    for (const file of commandFiles) {
+        const command = require(`./commands/${file}`);
+        commands.push(command.data.toJSON());
+    }
+
+    const rest = new REST({version: '10'}).setToken(token);
+
+    try {
+        console.log('Started refreshing application commands.');
+
+        await rest.put(
+            Routes.applicationGuildCommands(client.config.clientId, client.config.guildId),
+            {body: commands},
+        );
+
+        console.log('Successfully reloaded application commands.');
+    } catch (error) {
+        console.log("Error while reloading application commands.")
+        console.error(error);
+        process.exit(0);
+    }
+
     let checksums = "";
     let pass = false;
     const files = await fs.readdirSync("./");
     for (const file of files) {
-        if(file.endsWith(".js")) {
+        if (file.endsWith(".js")) {
             checksums += fs.statSync(`./${file}`).size;
-        }
-        else if(fs.lstatSync(file).isDirectory()) {
+        } else if (fs.lstatSync(file).isDirectory()) {
             const files = await fs.readdirSync(`./${file}`);
             let folder = file;
             for (const file of files) {
-                if(folder == "node_modules") break;
-                else if(file.endsWith(".js")) {
+                if (folder === "node_modules") break;
+                else if (file.endsWith(".js")) {
                     checksums += fs.statSync(`./${folder}/${file}`).size;
                 }
             }
         }
     }
     let checksumLength;
-    setInterval(()=>{
-        if(checksumLength == checksums.length) {
+    setInterval(() => {
+        if (checksumLength === checksums.length) {
             pass = true;
         }
     }, 1000)
-    while(!pass) {
+    while (!pass) {
         checksumLength = checksums.length;
         await utility.delay(10);
     }
