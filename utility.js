@@ -1,42 +1,38 @@
 const Discord = require('discord.js');
 const fs = require('node:fs');
+const { EmbedBuilder } = require('discord.js');
 
 exports.delay = (time) => {
     return new Promise(resolve => setTimeout(resolve, time));
 }
 
 exports.defaultEmbed = () => {
-    return new Discord.MessageEmbed()
+    return new EmbedBuilder()
         .setColor("#276fff")
         .setTimestamp()
         .setFooter({text: 'Reality Mod', iconURL: "https://cdn.discordapp.com/icons/319035622100566017/a_5aeeef7eb99344d68afe62bf451de986.png?size=1024"})
 }
 
 exports.errorEmbed = (msg) => {
-    return new Discord.MessageEmbed()
-        .setColor("RED")
+    return new EmbedBuilder()
+        .setColor("Red")
         .setTimestamp()
         .setFooter({text: 'Reality Mod', iconURL: "https://cdn.discordapp.com/icons/319035622100566017/a_5aeeef7eb99344d68afe62bf451de986.png?size=1024"})
-        .addField("Error", msg)
+        .addFields({name: "Error", value: msg})
 }
 
 exports.infoEmbed = (msg) => {
-    return new Discord.MessageEmbed()
-        .setColor("BLUE")
+    return new EmbedBuilder()
+        .setColor("Blue")
         .setTimestamp()
         .setFooter({text: 'Reality Mod', iconURL: "https://cdn.discordapp.com/icons/319035622100566017/a_5aeeef7eb99344d68afe62bf451de986.png?size=1024"})
-        .addField("Information", msg)
+        .addFields({name: "Information", value: msg})
 }
 
 exports.successEmbed = (msg) => {
-    return new Discord.MessageEmbed()
-        .setColor("GREEN")
+    return new EmbedBuilder()
+        .setColor("Green")
         .setTimestamp()
         .setFooter({text: 'Reality Mod', iconURL: "https://cdn.discordapp.com/icons/319035622100566017/a_5aeeef7eb99344d68afe62bf451de986.png?size=1024"})
-        .addField("Success", msg)
-}
-
-exports.saveSuggestions = () => {
-    let { suggestions } = require('./index.js');
-    fs.writeFileSync("./suggestions.json", JSON.stringify(suggestions));
+        .addFields({name: "Success", value: msg})
 }
