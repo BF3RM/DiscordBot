@@ -1,4 +1,4 @@
-const {Client, GatewayIntentBits, Partials, Collection, InteractionType, EmbedBuilder} = require('discord.js');
+const {Client, GatewayIntentBits, Partials, Collection, InteractionType, EmbedBuilder, ActivityType} = require('discord.js');
 const fs = require('node:fs');
 const os = require('os');
 const config = require("./config.json");
@@ -199,4 +199,30 @@ client.login(config.token).then(async () => {
     const logChannel = await client.channels.fetch(config.logsChannel);
     logChannel.send({content: `<@229988858874298368> bot logged in from ${os.hostname()}. Version: ${generateChecksum(checksums)}`});
     console.log(`Logged in. Version: ${generateChecksum(checksums)}`);
+    let names = [
+        "Reality Mod",
+        "nasty radio comms",
+        "hell",
+        "squads getting obliterated",
+        "bombardments",
+        "A-10 gun spinning up",
+        "senti's ass",
+        "Azadi Palace",
+        "Gulf of Oman",
+        "undefined",
+        "modding the world",
+        "the world",
+        //generate funny sentences
+        "the world is a dangerous place",
+        ];
+    let types = [ActivityType.Competing, ActivityType.Listening, ActivityType.Playing, ActivityType.Streaming, ActivityType.Watching];
+    let statuses = ["online", "idle", "dnd"];
+    setInterval(async () => {
+        let name = names[Math.floor(Math.random() * names.length)];
+        let type = types[Math.floor(Math.random() * types.length)];
+        let status = statuses[Math.floor(Math.random() * statuses.length)];
+
+        client.user.setStatus(status);
+        client.user.setActivity(name, {type: type});
+    },5000);
 });
