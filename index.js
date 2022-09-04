@@ -1,4 +1,4 @@
-const {Client, GatewayIntentBits, Partials, Collection, InteractionType, EmbedBuilder} = require('discord.js');
+const {Client, GatewayIntentBits, Partials, Collection, InteractionType, EmbedBuilder, ActivityType} = require('discord.js');
 const fs = require('node:fs');
 const os = require('os');
 const config = require("./config.json");
@@ -81,10 +81,10 @@ client.on('interactionCreate', async i => {
         let vote = i.customId.split("-")[0];
         vote = vote.charAt(0).toUpperCase() + vote.slice(1);
 
-       // if (suggestion.suggestedBy === i.user.id) {
-       //     replyEmbed = utility.errorEmbed(`You cannot vote on your own suggestion.`);
-       //     return i.editReply({embeds: [replyEmbed]})
-       // }
+        if (suggestion.suggestedBy === i.user.id) {
+             replyEmbed = utility.errorEmbed(`You cannot vote on your own suggestion.`);
+             return i.editReply({embeds: [replyEmbed]})
+        }
 
         if (suggestion.votes.upvotes.includes(i.user.id) || suggestion.votes.downvotes.includes(i.user.id)) {
             let vote = suggestion.votes.upvotes.includes(i.user.id) ? "Upvote" : "Downvote";
@@ -113,7 +113,7 @@ client.on('interactionCreate', async i => {
             votesString = `**⏫ Upvotes: ${suggestion.votes.upvotes.length} (${upvotesPercent}%)**\n⏬ Downvotes: ${suggestion.votes.downvotes.length} (${downvotesPercent}%)`;
         }
         if(suggestion.editedBy) {
-            embed.setDescription(`${votesString}\n\n**Last edit by**\n${suggestion.editedBy} at ${suggestion.editedAt}`);
+            embed.setDescription(suggestion.contents + `\n\n**Votes**\n${votesString}\n\n**Last edit by**\n${suggestion.editedBy} at ${suggestion.editedAt}`);
         }
         else {
             embed.setDescription(suggestion.contents + `\n\n**Votes**\n${votesString}`);
