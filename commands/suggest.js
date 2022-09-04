@@ -71,15 +71,15 @@ module.exports = {
 
         obj["msg"] = msg.id;
 
-        /*const thr = await interaction.channel.threads.create({
+        const thr = await interaction.channel.threads.create({
             startMessage: msg.id,
             name: `Suggestion ${client.suggestions.length + 1}`,
             autoArchiveDuration: 10080,
             reason: `Created for Suggestion ${client.suggestions.length + 1}`,
             rateLimitPerUser: 5
-        });*/
+        });
 
-        //obj["thr"] = thr.id;
+        obj["thr"] = thr.id;
 
         client.suggestions.push(obj);
         client.saveSuggestions();
