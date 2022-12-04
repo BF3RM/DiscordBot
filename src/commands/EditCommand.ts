@@ -38,7 +38,7 @@ export default class EditCommand extends BaseCommand {
     throw new Error("Method not implemented.");
   }
 
-  public async executeAutocomplete(
+  public async autocomplete(
     interaction: AutocompleteInteraction
   ): Promise<void> {
     const focusedValue = interaction.options.getFocused();
