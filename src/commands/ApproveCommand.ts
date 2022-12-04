@@ -3,7 +3,7 @@ import { BaseCommand } from "../core";
 
 export default class ApproveCommand extends BaseCommand {
   constructor() {
-    super("approve");
+    super("approve", true);
   }
 
   public configure(builder: SlashCommandBuilder) {

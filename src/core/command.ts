@@ -1,9 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import {
+  AutocompleteInteraction,
   Collection,
-  CommandInteraction,
   SlashCommandBuilder,
+  CommandInteraction,
 } from "discord.js";
 
 type CommandConstructor = new () => BaseCommand;
@@ -37,10 +38,24 @@ export type ConfiguredSlashCommandBuilder =
   | Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup">;
 
 export abstract class BaseCommand {
-  protected constructor(public readonly name: string) {}
+  protected constructor(
+    public readonly name: string,
+    public readonly isEphemeral = false
+  ) {}
 
   public abstract configure(
     builder: SlashCommandBuilder
   ): ConfiguredSlashCommandBuilder;
   public abstract execute(interaction: CommandInteraction): Promise<void>;
+
+  /**
+   * Allows one to autocomplete on a specific command
+   * The default implementation will respond with an empty array
+   * @param interaction the autocomplete interaction
+   */
+  public async autocomplete(
+    interaction: AutocompleteInteraction
+  ): Promise<void> {
+    interaction.respond([]);
+  }
 }

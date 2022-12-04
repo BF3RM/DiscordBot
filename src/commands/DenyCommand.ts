@@ -3,7 +3,7 @@ import { BaseCommand } from "../core";
 
 export default class DenyCommand extends BaseCommand {
   constructor() {
-    super("deny");
+    super("deny", true);
   }
 
   public configure(builder: SlashCommandBuilder) {

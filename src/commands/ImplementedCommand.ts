@@ -3,7 +3,7 @@ import { BaseCommand } from "../core";
 
 export default class ImplementedCommand extends BaseCommand {
   constructor() {
-    super("implemented");
+    super("implemented", true);
   }
 
   public configure(builder: SlashCommandBuilder) {

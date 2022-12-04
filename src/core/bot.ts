@@ -52,21 +52,28 @@ export class Bot {
   }
 
   private async onInteractionCreate(interaction: Interaction) {
-    if (!interaction.isCommand()) {
+    if (!interaction.isCommand() && !interaction.isAutocomplete()) {
+      console.log("Yo who the fuck are you?", interaction);
       return;
     }
 
+    const command = this.commands.get(interaction.commandName);
+
     try {
-      const command = this.commands.get(interaction.commandName);
-      if (!command) {
-        console.warn(
-          `[Bot] Received interaction for unsupported command: "${interaction.commandName}", channel "${interaction.channel?.id}" by ${interaction.user.tag}`
-        );
-        interaction.followUp({ content: "An error has occurred" });
-        return;
+      if (interaction.isCommand()) {
+        if (!command) {
+          console.warn(
+            `[Bot] Received interaction for unsupported command: "${interaction.commandName}", channel "${interaction.channel?.id}" by ${interaction.user.tag}`
+          );
+          interaction.followUp({ content: "An error has occurred" });
+          return;
+        }
+        await interaction.deferReply({ ephemeral: command.isEphemeral });
+        await command.execute(interaction);
+      } else if (interaction.isAutocomplete()) {
+        if (!command) return;
+        await command.autocomplete(interaction);
       }
-      await interaction.deferReply();
-      await command.execute(interaction);
     } catch (err) {
       console.error(
         `${(err as Error).message}: "${interaction.commandName}", channel "${
