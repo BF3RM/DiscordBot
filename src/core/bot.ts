@@ -12,6 +12,7 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import { getBotToken } from "../config";
+import { runMigrations } from "../services";
 
 import { BaseCommand, loadCommands } from "./command";
 
@@ -28,14 +29,17 @@ export class Bot {
     console.log(`[Bot] Loaded ${this.commands.size} commands`);
   }
 
-  public start() {
+  public async start() {
     console.log("[Bot] Starting...");
+
+    console.log("[Bot] Running database migrations");
+    await runMigrations();
 
     this.client.on("ready", this.onReady.bind(this));
     this.client.on("interactionCreate", this.onInteractionCreate.bind(this));
     this.client.on("guildCreate", this.onGuildCreate.bind(this));
 
-    this.client.login(getBotToken());
+    return this.client.login(getBotToken());
   }
 
   private async onReady() {
