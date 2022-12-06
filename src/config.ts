@@ -19,3 +19,5 @@ export const getDatabasePort = () =>
 export const getDatabaseName = () => getEnvVariable("DB_NAME");
 export const getDatabaseUsername = () => getEnvVariable("DB_USERNAME");
 export const getDatabasePassword = () => getEnvVariable("DB_PASSWORD");
+
+export const getHeraEndpoint = () => getEnvVariable("HERA_ENDPOINT");
