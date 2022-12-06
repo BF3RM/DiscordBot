@@ -13,7 +13,7 @@ export const fetchChannelMessage = async (
   const channel = await client.channels.fetch(channelId);
   if (!channel) return;
 
-  if (channel.isTextBased()) {
+  if (!channel.isDMBased() && channel.isTextBased()) {
     return channel.messages.fetch(messageId);
   }
 };

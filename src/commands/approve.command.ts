@@ -1,7 +1,9 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { BaseCommand } from "../core";
+import { SlashCommandBuilder } from "discord.js";
 
-export default class ApproveCommand extends BaseCommand {
+import { BaseSuggestionResponseCommand, SuggestionReplyContext } from "./base/response.command";
+import { SuggestionEntity } from "../entities";
+
+export default class ApproveCommand extends BaseSuggestionResponseCommand {
   constructor() {
     super("approve", true);
   }
@@ -14,6 +16,7 @@ export default class ApproveCommand extends BaseCommand {
           .setName("id")
           .setDescription("The ID of the suggestion")
           .setRequired(true)
+          .setAutocomplete(true)
       )
       .addStringOption((option) =>
         option
@@ -23,7 +26,7 @@ export default class ApproveCommand extends BaseCommand {
       );
   }
 
-  public execute(interaction: ChatInputCommandInteraction): Promise<void> {
+  protected processSuggestion(ctx: SuggestionReplyContext): Promise<SuggestionEntity> {
     throw new Error("Method not implemented.");
   }
 }
