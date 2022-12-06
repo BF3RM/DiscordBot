@@ -64,7 +64,7 @@ export class Bot {
     const command = this.commands.get(interaction.commandName);
 
     try {
-      if (interaction.isCommand()) {
+      if (interaction.isChatInputCommand()) {
         if (!command) {
           console.warn(
             `[Bot] Received interaction for unsupported command: "${interaction.commandName}", channel "${interaction.channel?.id}" by ${interaction.user.tag}`
@@ -84,6 +84,9 @@ export class Bot {
           interaction.channel?.id
         }" by ${interaction.user.tag}`
       );
+      if (interaction.isCommand()) {
+        await interaction.followUp({ content: "An error has occurred" });
+      }
     }
   }
 

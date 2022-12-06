@@ -1,3 +1,5 @@
+import "reflect-metadata";
+
 import { DataSource } from "typeorm";
 import {
   getDatabaseHost,
@@ -8,6 +10,8 @@ import {
 } from "../config";
 
 import { SuggestionEntity } from "../entities";
+
+import migrationChangeSets from "../migrations/change-sets";
 
 let dataSource: DataSource | undefined;
 
@@ -21,6 +25,7 @@ export const getDatabaseDataSource = () => {
       password: getDatabasePassword(),
       database: getDatabaseName(),
       entities: [SuggestionEntity],
+      migrations: [...migrationChangeSets],
       migrationsRun: false,
       synchronize: false,
     });

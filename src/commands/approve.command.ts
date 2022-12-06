@@ -1,4 +1,4 @@
-import { CommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { BaseCommand } from "../core";
 
 export default class ApproveCommand extends BaseCommand {
@@ -23,7 +23,7 @@ export default class ApproveCommand extends BaseCommand {
       );
   }
 
-  public execute(interaction: CommandInteraction): Promise<void> {
+  public execute(interaction: ChatInputCommandInteraction): Promise<void> {
     throw new Error("Method not implemented.");
   }
 }

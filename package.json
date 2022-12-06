@@ -10,7 +10,10 @@
       "build": "tsc",
       "test": "echo \"Error: no test specified\" && exit 1",
       "start": "ts-node src/index.ts",
-      "typeorm": "typeorm-ts-node-commonjs"
+      "typeorm": "typeorm-ts-node-commonjs",
+      "migrations:generate": "pnpm typeorm migration:generate -d ./src/migrations/dataSource.ts",
+      "migrations:run": "pnpm typeorm migration:run -d ./src/migrations//dataSource.ts",
+      "migrations:revert": "pnpm typeorm migration:revert -d ./src/migrations/dataSource.ts"
    },
    "keywords": [],
    "author": "",

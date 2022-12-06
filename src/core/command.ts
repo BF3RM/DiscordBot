@@ -4,7 +4,7 @@ import {
   AutocompleteInteraction,
   Collection,
   SlashCommandBuilder,
-  CommandInteraction,
+  ChatInputCommandInteraction,
 } from "discord.js";
 
 type CommandConstructor = new () => BaseCommand;
@@ -46,7 +46,9 @@ export abstract class BaseCommand {
   public abstract configure(
     builder: SlashCommandBuilder
   ): ConfiguredSlashCommandBuilder;
-  public abstract execute(interaction: CommandInteraction): Promise<void>;
+  public abstract execute(
+    interaction: ChatInputCommandInteraction
+  ): Promise<void>;
 
   /**
    * Allows one to autocomplete on a specific command

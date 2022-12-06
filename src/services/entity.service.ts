@@ -52,7 +52,7 @@ export class BaseEntityService<Entity extends BaseEntity> {
    * @returns an instance of the entity or null if not found
    */
   async get(id: number): Promise<Entity | null> {
-    return this.findOne({ id: 1 } as FindOptionsWhere<Entity>);
+    return this.findOne({ id } as FindOptionsWhere<Entity>);
   }
 
   /**
@@ -81,8 +81,8 @@ export class BaseEntityService<Entity extends BaseEntity> {
    * @param entity entity to create
    * @returns the created entity
    */
-  async create(entity: Entity) {
-    return this.save(entity);
+  async create(entity: Omit<Entity, "id">): Promise<Entity> {
+    return this.save(entity as Entity);
   }
 
   protected async save(entity: Entity): Promise<Entity> {
