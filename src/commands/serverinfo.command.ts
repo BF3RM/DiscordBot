@@ -34,6 +34,8 @@ export default class ServerInfoCommand extends BaseCommand {
   ): Promise<void> {
     const heraService = HeraService.getInstance();
 
+    await interaction.deferReply();
+
     const servers = await heraService.getServers();
 
     if (!servers.length) {

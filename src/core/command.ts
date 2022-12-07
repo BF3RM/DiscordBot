@@ -34,10 +34,7 @@ export type ConfiguredSlashCommandBuilder =
   | Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup">;
 
 export abstract class BaseCommand {
-  protected constructor(
-    public readonly name: string,
-    public readonly isEphemeral = false
-  ) {}
+  protected constructor(public readonly name: string) {}
 
   public abstract configure(
     builder: SlashCommandBuilder

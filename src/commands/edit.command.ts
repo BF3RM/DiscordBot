@@ -1,19 +1,11 @@
 import {
   AutocompleteInteraction,
-  ChatInputCommandInteraction,
   EmbedBuilder,
   SlashCommandBuilder,
 } from "discord.js";
 
-import { BaseCommand } from "../core";
-import { SuggestionStatus } from "../entities";
 import { SuggestionEntityService } from "../services";
-import {
-  errorEmbed,
-  fetchChannelMessage,
-  getSafeNumber,
-  successEmbed,
-} from "../utils";
+import { getSafeNumber, successEmbed } from "../utils";
 import {
   BaseSuggestionResponseCommand,
   SuggestionReplyContext,
@@ -21,7 +13,7 @@ import {
 
 export default class EditCommand extends BaseSuggestionResponseCommand {
   constructor() {
-    super("edit", true);
+    super("edit");
   }
 
   public configure(builder: SlashCommandBuilder) {
@@ -83,8 +75,9 @@ export default class EditCommand extends BaseSuggestionResponseCommand {
     await suggestionMessage.edit({ embeds: [suggestionEmbed] });
     await suggestionService.update(suggestion.id, suggestion);
 
-    await interaction.editReply({
+    await interaction.reply({
       embeds: [successEmbed(interaction.client, "Suggestion edited!")],
+      ephemeral: true,
     });
   }
 

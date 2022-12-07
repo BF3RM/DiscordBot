@@ -4,11 +4,10 @@ import {
   BaseSuggestionResponseCommand,
   SuggestionReplyContext,
 } from "./base/response.command";
-import { SuggestionEntity } from "../entities";
 
 export default class DenyCommand extends BaseSuggestionResponseCommand {
   constructor() {
-    super("deny", true);
+    super("deny");
   }
 
   public configure(builder: SlashCommandBuilder) {

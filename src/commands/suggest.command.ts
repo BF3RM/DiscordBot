@@ -1,8 +1,8 @@
 import {
   ActionRowBuilder,
   ButtonBuilder,
+  ButtonStyle,
   ChatInputCommandInteraction,
-  EmbedBuilder,
   SlashCommandBuilder,
   TextChannel,
 } from "discord.js";
@@ -49,6 +49,8 @@ export default class SuggestCommand extends BaseCommand {
 
     const attachement = interaction.options.getAttachment("image");
 
+    await interaction.deferReply();
+
     const suggestion = await suggestionService.create({
       channelId: interaction.channelId,
       suggestedBy: interaction.user.id,
@@ -75,12 +77,12 @@ export default class SuggestCommand extends BaseCommand {
       new ButtonBuilder()
         .setCustomId(`upvote#${suggestion.id}`)
         .setLabel("Upvote")
-        .setStyle(3)
+        .setStyle(ButtonStyle.Success)
         .setEmoji("⏫"),
       new ButtonBuilder()
         .setCustomId(`downvote#${suggestion.id}`)
         .setLabel("Downvote")
-        .setStyle(4)
+        .setStyle(ButtonStyle.Danger)
         .setEmoji("⏬")
     );
 

@@ -107,8 +107,6 @@ export class Bot {
           interaction.followUp({ content: "An error has occurred" });
           return;
         }
-
-        await interaction.deferReply({ ephemeral: command.isEphemeral });
         await command.execute(interaction);
       } else if (interaction.isAutocomplete()) {
         if (!command) return;

@@ -27,20 +27,22 @@ export abstract class BaseSuggestionResponseCommand extends BaseCommand {
       interaction.options.getNumber("id", true)
     );
     if (!suggestion) {
-      await interaction.editReply({
+      await interaction.reply({
         embeds: [errorEmbed(interaction.client, "Failed to find suggestion")],
+        ephemeral: true,
       });
       return;
     }
 
     if (suggestion.status !== SuggestionStatus.PENDING) {
-      await interaction.editReply({
+      await interaction.reply({
         embeds: [
           errorEmbed(
             interaction.client,
             `This suggestion was already ${suggestion.status.toLowerCase()}!`
           ),
         ],
+        ephemeral: true,
       });
     }
 
@@ -51,10 +53,11 @@ export abstract class BaseSuggestionResponseCommand extends BaseCommand {
     );
 
     if (!suggestionMessage) {
-      await interaction.editReply({
+      await interaction.reply({
         embeds: [
           errorEmbed(interaction.client, "Failed to find original suggestion"),
         ],
+        ephemeral: true,
       });
       return;
     }

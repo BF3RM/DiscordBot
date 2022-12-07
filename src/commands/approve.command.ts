@@ -4,11 +4,10 @@ import {
   BaseSuggestionResponseCommand,
   SuggestionReplyContext,
 } from "./base/response.command";
-import { SuggestionEntity } from "../entities";
 
 export default class ApproveCommand extends BaseSuggestionResponseCommand {
   constructor() {
-    super("approve", true);
+    super("approve");
   }
 
   public configure(builder: SlashCommandBuilder) {
