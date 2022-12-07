@@ -1,4 +1,8 @@
-import { AutocompleteInteraction, ChatInputCommandInteraction, Message } from "discord.js";
+import {
+  AutocompleteInteraction,
+  ChatInputCommandInteraction,
+  Message,
+} from "discord.js";
 
 import { BaseCommand } from "../../core";
 import { SuggestionEntity, SuggestionStatus } from "../../entities";
@@ -14,7 +18,9 @@ export interface SuggestionReplyContext {
 }
 
 export abstract class BaseSuggestionResponseCommand extends BaseCommand {
-  public async execute(interaction: ChatInputCommandInteraction): Promise<void> {
+  public async execute(
+    interaction: ChatInputCommandInteraction
+  ): Promise<void> {
     const suggestionService = await SuggestionEntityService.getInstance();
 
     const suggestion = await suggestionService.get(
@@ -57,16 +63,17 @@ export abstract class BaseSuggestionResponseCommand extends BaseCommand {
       interaction,
       suggestionService,
       suggestion,
-      suggestionMessage
-    }
+      suggestionMessage,
+    };
 
-    const updatedSuggestion = await this.processSuggestion(ctx);
-    await suggestionService.update(suggestion.id, updatedSuggestion);
+    await this.handleReply(ctx);
   }
 
-  protected abstract processSuggestion(ctx: SuggestionReplyContext): Promise<SuggestionEntity>;
+  protected abstract handleReply(ctx: SuggestionReplyContext): Promise<void>;
 
-  public async autocomplete(interaction: AutocompleteInteraction): Promise<void> {
+  public async autocomplete(
+    interaction: AutocompleteInteraction
+  ): Promise<void> {
     const suggestionService = await SuggestionEntityService.getInstance();
 
     const focusedValue = interaction.options.getFocused();

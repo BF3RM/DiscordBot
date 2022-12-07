@@ -1,6 +1,9 @@
 import { SlashCommandBuilder } from "discord.js";
 
-import { BaseSuggestionResponseCommand, SuggestionReplyContext } from "./base/response.command";
+import {
+  BaseSuggestionResponseCommand,
+  SuggestionReplyContext,
+} from "./base/response.command";
 import { SuggestionEntity } from "../entities";
 
 export default class DenyCommand extends BaseSuggestionResponseCommand {
@@ -26,7 +29,7 @@ export default class DenyCommand extends BaseSuggestionResponseCommand {
       );
   }
 
-  protected processSuggestion(ctx: SuggestionReplyContext): Promise<SuggestionEntity> {
+  protected handleReply(ctx: SuggestionReplyContext): Promise<void> {
     throw new Error("Method not implemented.");
   }
 }

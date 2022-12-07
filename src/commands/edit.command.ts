@@ -14,8 +14,12 @@ import {
   getSafeNumber,
   successEmbed,
 } from "../utils";
+import {
+  BaseSuggestionResponseCommand,
+  SuggestionReplyContext,
+} from "./base/response.command";
 
-export default class EditCommand extends BaseCommand {
+export default class EditCommand extends BaseSuggestionResponseCommand {
   constructor() {
     super("edit", true);
   }
@@ -50,48 +54,13 @@ export default class EditCommand extends BaseCommand {
       );
   }
 
-  public async execute(
-    interaction: ChatInputCommandInteraction
-  ): Promise<void> {
-    const suggestionService = await SuggestionEntityService.getInstance();
-
-    const suggestion = await suggestionService.get(
-      interaction.options.getNumber("id", true)
-    );
-    if (!suggestion) {
-      await interaction.editReply({
-        embeds: [errorEmbed(interaction.client, "Failed to find suggestion")],
-      });
-      return;
-    }
-
-    if (suggestion.status !== SuggestionStatus.PENDING) {
-      await interaction.editReply({
-        embeds: [
-          errorEmbed(
-            interaction.client,
-            `This suggestion was already ${suggestion.status.toLowerCase()}!`
-          ),
-        ],
-      });
-    }
-
-    const originalMessage = await fetchChannelMessage(
-      interaction.client,
-      suggestion.channelId,
-      suggestion.messageId!
-    );
-
-    if (!originalMessage) {
-      await interaction.editReply({
-        embeds: [
-          errorEmbed(interaction.client, "Failed to find original suggestion"),
-        ],
-      });
-      return;
-    }
-
-    const suggestionEmbed = EmbedBuilder.from(originalMessage.embeds[0]);
+  protected async handleReply({
+    interaction,
+    suggestion,
+    suggestionMessage,
+    suggestionService,
+  }: SuggestionReplyContext): Promise<void> {
+    const suggestionEmbed = EmbedBuilder.from(suggestionMessage.embeds[0]);
     const updatedTitle = interaction.options.getString("title");
     const updatedMessage = interaction.options.getString("message");
     const updatedAttachment = interaction.options.getAttachment("image");
@@ -111,7 +80,7 @@ export default class EditCommand extends BaseCommand {
       suggestionEmbed.setImage(updatedAttachment.url);
     }
 
-    await originalMessage.edit({ embeds: [suggestionEmbed] });
+    await suggestionMessage.edit({ embeds: [suggestionEmbed] });
     await suggestionService.update(suggestion.id, suggestion);
 
     await interaction.editReply({
