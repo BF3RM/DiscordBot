@@ -13,6 +13,7 @@ import {
 } from "discord.js";
 import { getBotToken } from "../config";
 import { runMigrations } from "../services";
+import { BaseButtonHandler, loadButtonHandlers } from "./button";
 
 import { BaseCommand, loadCommands } from "./command";
 
@@ -23,10 +24,14 @@ export class Bot {
   });
 
   private commands: Collection<string, BaseCommand>;
+  private buttonHandlers: Collection<string, BaseButtonHandler>;
 
   constructor() {
     this.commands = loadCommands();
     console.log(`[Bot] Loaded ${this.commands.size} commands`);
+
+    this.buttonHandlers = loadButtonHandlers();
+    console.log(`[Bot] Loaded ${this.buttonHandlers.size} button handlers`);
   }
 
   public async start() {
@@ -56,6 +61,36 @@ export class Bot {
   }
 
   private async onInteractionCreate(interaction: Interaction) {
+    if (interaction.isButton()) {
+      const prefix = interaction.customId.split("#").shift();
+      if (!prefix) {
+        console.error("[Bot] Received button interaction without custom id");
+        return;
+      }
+
+      const handler = this.buttonHandlers.get(prefix);
+      if (!handler) {
+        console.warn(
+          `[Bot] Received button interaction for unsupported prefix: ${prefix}`
+        );
+        await interaction.reply({
+          content: "An error has occurred",
+          ephemeral: true,
+        });
+        return;
+      }
+
+      try {
+        await handler.handle(interaction);
+      } catch (err) {
+        await interaction.followUp({
+          content: "An error has occurred",
+          ephemeral: true,
+        });
+      }
+      return;
+    }
+
     if (!interaction.isCommand() && !interaction.isAutocomplete()) {
       console.log("Yo who the fuck are you?", interaction);
       return;
@@ -72,6 +107,7 @@ export class Bot {
           interaction.followUp({ content: "An error has occurred" });
           return;
         }
+
         await interaction.deferReply({ ephemeral: command.isEphemeral });
         await command.execute(interaction);
       } else if (interaction.isAutocomplete()) {

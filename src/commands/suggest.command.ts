@@ -67,9 +67,8 @@ export default class SuggestCommand extends BaseCommand {
         name: interaction.user.tag,
         iconURL: interaction.user.displayAvatarURL(),
       })
-      .setDescription(
-        suggestion.message + "\n\n**Votes**\n⏫ Upvotes: 0\n⏬ Downvotes: 0"
-      )
+      .setDescription(suggestion.message)
+      .setFields({ name: "Votes", value: "⏫ Upvotes: 0\n⏬ Downvotes: 0" })
       .setImage(attachement?.url ?? null);
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(

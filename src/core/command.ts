@@ -7,11 +7,7 @@ import {
   ChatInputCommandInteraction,
 } from "discord.js";
 
-type CommandConstructor = new () => BaseCommand;
-
-interface CommandModule {
-  default: CommandConstructor;
-}
+import { EsModule } from "./types";
 
 export const loadCommands = (): Collection<string, BaseCommand> => {
   const commandsPath = path.join(__dirname, "..", "commands");
@@ -23,7 +19,7 @@ export const loadCommands = (): Collection<string, BaseCommand> => {
 
   for (const file of commandFiles) {
     const { default: commandType } =
-      require(`${commandsPath}/${file}`) as CommandModule;
+      require(`${commandsPath}/${file}`) as EsModule<BaseCommand>;
 
     const command = new commandType();
 

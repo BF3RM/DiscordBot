@@ -103,7 +103,7 @@ export default class EditCommand extends BaseCommand {
 
     if (updatedMessage) {
       suggestion.message = updatedMessage;
-      suggestionEmbed.setDescription(suggestion.message); // TODO: Add all the logic to update description stuffs
+      suggestionEmbed.setDescription(suggestion.message);
     }
 
     if (updatedAttachment) {
