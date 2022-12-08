@@ -19,7 +19,7 @@ export default class ApproveSuggestionButtonHandler extends BaseButtonHandler {
     const suggestion = await suggestionService.get(parseInt(args[0]));
     if (!suggestion) {
       await interaction.followUp({
-        embeds: [errorEmbed(interaction.client, "Failed to find suggestion")],
+        embeds: [errorEmbed("Failed to find suggestion")],
         ephemeral: true,
       });
       return;
@@ -27,12 +27,7 @@ export default class ApproveSuggestionButtonHandler extends BaseButtonHandler {
 
     if (suggestion.suggestedBy === interaction.user.id) {
       await interaction.reply({
-        embeds: [
-          errorEmbed(
-            interaction.client,
-            "You cannot vote on your own suggestion"
-          ),
-        ],
+        embeds: [errorEmbed("You cannot vote on your own suggestion")],
         ephemeral: true,
       });
       return;
@@ -47,10 +42,7 @@ export default class ApproveSuggestionButtonHandler extends BaseButtonHandler {
         : "Downvote";
       await interaction.reply({
         embeds: [
-          errorEmbed(
-            interaction.client,
-            `You have already voted on this suggestion (${vote}).`
-          ),
+          errorEmbed(`You have already voted on this suggestion (${vote}).`),
         ],
         ephemeral: true,
       });
@@ -65,9 +57,7 @@ export default class ApproveSuggestionButtonHandler extends BaseButtonHandler {
 
     if (!originalMessage) {
       await interaction.reply({
-        embeds: [
-          errorEmbed(interaction.client, "Failed to find original suggestion"),
-        ],
+        embeds: [errorEmbed("Failed to find original suggestion")],
         ephemeral: true,
       });
       return;
@@ -85,7 +75,7 @@ export default class ApproveSuggestionButtonHandler extends BaseButtonHandler {
     await suggestionService.update(suggestion.id, suggestion);
 
     await interaction.reply({
-      embeds: [successEmbed(interaction.client, "Upvoted suggestion")],
+      embeds: [successEmbed("Upvoted suggestion")],
       ephemeral: true,
     });
   }

@@ -1,7 +1,9 @@
 import {
   ActivityType,
+  ApplicationCommandType,
   Client,
   Collection,
+  ContextMenuCommandBuilder,
   DiscordAPIError,
   GatewayIntentBits,
   Guild,
@@ -15,7 +17,8 @@ import { getBotToken } from "../config";
 import { runMigrations } from "../services";
 import { BaseButtonHandler, loadButtonHandlers } from "./button";
 
-import { BaseCommand, loadCommands } from "./command";
+import { Command } from "./command";
+import { loadCommands } from "./loaders";
 
 export class Bot {
   private client = new Client({
@@ -23,7 +26,7 @@ export class Bot {
     partials: [Partials.Channel],
   });
 
-  private commands: Collection<string, BaseCommand>;
+  private commands: Collection<string, Command>;
   private buttonHandlers: Collection<string, BaseButtonHandler>;
 
   constructor() {
@@ -91,37 +94,41 @@ export class Bot {
       return;
     }
 
-    if (!interaction.isCommand() && !interaction.isAutocomplete()) {
-      console.log("Yo who the fuck are you?", interaction);
-      return;
-    }
+    if (interaction.isCommand() || interaction.isAutocomplete()) {
+      const command = this.commands.get(interaction.commandName);
+      if (!command) return;
 
-    const command = this.commands.get(interaction.commandName);
-
-    try {
-      if (interaction.isChatInputCommand()) {
-        if (!command) {
-          console.warn(
-            `[Bot] Received interaction for unsupported command: "${interaction.commandName}", channel "${interaction.channel?.id}" by ${interaction.user.tag}`
-          );
-          interaction.followUp({ content: "An error has occurred" });
-          return;
-        }
-        await command.execute(interaction);
-      } else if (interaction.isAutocomplete()) {
-        if (!command) return;
-        await command.autocomplete(interaction);
-      }
-    } catch (err) {
-      console.error(
-        `${(err as Error).message}: "${interaction.commandName}", channel "${
-          interaction.channel?.id
-        }" by ${interaction.user.tag}`
-      );
       if (interaction.isCommand()) {
-        await interaction.followUp({ content: "An error has occurred" });
+        await command.onCommand(interaction);
+      } else {
+        await command.onAutocomplete(interaction);
       }
     }
+
+    // try {
+    //   if (interaction.isChatInputCommand()) {
+    //     if (!command) {
+    //       console.warn(
+    //         `[Bot] Received interaction for unsupported command: "${interaction.commandName}", channel "${interaction.channel?.id}" by ${interaction.user.tag}`
+    //       );
+    //       interaction.followUp({ content: "An error has occurred" });
+    //       return;
+    //     }
+    //     await command.execute(interaction);
+    //   } else if (interaction.isAutocomplete()) {
+    //     if (!command) return;
+    //     await command.autocomplete(interaction);
+    //   }
+    // } catch (err) {
+    //   console.error(
+    //     `${(err as Error).message}: "${interaction.commandName}", channel "${
+    //       interaction.channel?.id
+    //     }" by ${interaction.user.tag}`
+    //   );
+    //   if (interaction.isCommand()) {
+    //     await interaction.followUp({ content: "An error has occurred" });
+    //   }
+    // }
   }
 
   private async registerCommands() {
@@ -141,11 +148,28 @@ export class Bot {
     try {
       const rest = new REST({ version: "10" }).setToken(getBotToken());
 
-      const commandData = this.commands.map((command) =>
-        command
-          .configure(new SlashCommandBuilder().setName(command.name))
-          .toJSON()
-      );
+      const commandData = this.commands.map((command) => command.toJSON());
+
+      // commandData.push(
+      //   new ContextMenuCommandBuilder()
+      //     .setName("Approve suggestion")
+      //     .setType(ApplicationCommandType.Message)
+      //     .toJSON() as any
+      // );
+
+      // commandData.push(
+      //   new ContextMenuCommandBuilder()
+      //     .setName("Deny suggestion")
+      //     .setType(ApplicationCommandType.Message)
+      //     .toJSON() as any
+      // );
+
+      // commandData.push(
+      //   new ContextMenuCommandBuilder()
+      //     .setName("Implement suggestion")
+      //     .setType(ApplicationCommandType.Message)
+      //     .toJSON() as any
+      // );
 
       await rest.put(
         Routes.applicationGuildCommands(this.client.user.id, guildId),

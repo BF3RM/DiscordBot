@@ -18,26 +18,18 @@ export const fetchChannelMessage = async (
   }
 };
 
-export const createDefaultEmbed = (client: Client) =>
-  new EmbedBuilder()
-    .setColor("#276fff")
-    .setTimestamp()
-    .setFooter({
-      text: client.user?.username || "RealityMod",
-      iconURL: client.user?.displayAvatarURL(),
-    });
+export const createDefaultEmbed = () =>
+  new EmbedBuilder().setColor("#276fff").setTimestamp();
 
-export const errorEmbed = (client: Client, msg: string) =>
-  createDefaultEmbed(client)
-    .setColor("Red")
-    .addFields({ name: "Error", value: msg });
+export const errorEmbed = (msg: string) =>
+  createDefaultEmbed().setColor("Red").addFields({ name: "Error", value: msg });
 
-export const infoEmbed = (client: Client, msg: string) =>
-  createDefaultEmbed(client)
+export const infoEmbed = (msg: string) =>
+  createDefaultEmbed()
     .setColor("Blue")
     .addFields({ name: "Information", value: msg });
 
-export const successEmbed = (client: Client, msg: string) =>
-  createDefaultEmbed(client)
+export const successEmbed = (msg: string) =>
+  createDefaultEmbed()
     .setColor("Green")
     .addFields({ name: "Success", value: msg });

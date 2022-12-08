@@ -1,34 +1,56 @@
-import { SlashCommandBuilder } from "discord.js";
-
 import {
-  BaseSuggestionResponseCommand,
-  SuggestionReplyContext,
-} from "./base/response.command";
+  ActionRowBuilder,
+  ApplicationCommandType,
+  ModalActionRowComponentBuilder,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+} from "discord.js";
+import { createContextMenuCommand } from "../core";
+import { SuggestionEntityService } from "../services";
+import { errorEmbed, successEmbed } from "../utils";
 
-export default class ApproveCommand extends BaseSuggestionResponseCommand {
-  constructor() {
-    super("approve");
-  }
+export default createContextMenuCommand(
+  "Approve suggestion",
+  ApplicationCommandType.Message,
+  async (interaction) => {
+    if (!interaction.isMessageContextMenuCommand()) return;
 
-  public configure(builder: SlashCommandBuilder) {
-    return builder
-      .setDescription("Approves a suggestion")
-      .addNumberOption((option) =>
-        option
-          .setName("id")
-          .setDescription("The ID of the suggestion")
-          .setRequired(true)
-          .setAutocomplete(true)
-      )
-      .addStringOption((option) =>
-        option
-          .setName("reason")
-          .setDescription("Reason for approval")
-          .setRequired(false)
+    const suggestionService = await SuggestionEntityService.getInstance();
+
+    const suggestion = await suggestionService.findOne({
+      messageId: interaction.targetMessage.id,
+    });
+
+    if (!suggestion) {
+      await interaction.reply({
+        embeds: [errorEmbed("Suggestion not found")],
+        ephemeral: true,
+      });
+      return;
+    }
+
+    const modal = new ModalBuilder()
+      .setTitle(`Approve #${suggestion.id}?`)
+      .setCustomId("approveModal")
+      .setComponents(
+        new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
+          new TextInputBuilder()
+            .setCustomId("reasonInput")
+            .setLabel("Reason")
+            .setStyle(TextInputStyle.Paragraph)
+        )
       );
-  }
 
-  protected handleReply(ctx: SuggestionReplyContext): Promise<void> {
-    throw new Error("Method not implemented.");
+    await interaction.showModal(modal);
+
+    const submitInteraction = await interaction.awaitModalSubmit({
+      time: 60000,
+    });
+
+    await submitInteraction.reply({
+      embeds: [successEmbed("Suggestion approved")],
+      ephemeral: true,
+    });
   }
-}
+);
