@@ -7,7 +7,9 @@ import {
   TextInputStyle,
 } from "discord.js";
 import { createContextMenuCommand } from "../core";
+import { SuggestionStatus } from "../entities";
 import { SuggestionEntityService } from "../services";
+import { ModalService } from "../services/modal.service";
 import { errorEmbed, successEmbed } from "../utils";
 
 export default createContextMenuCommand(
@@ -42,13 +44,13 @@ export default createContextMenuCommand(
         )
       );
 
-    await interaction.showModal(modal);
+    const modalInteraction = await ModalService.showModal(interaction, modal, 120_000);
 
-    const submitInteraction = await interaction.awaitModalSubmit({
-      time: 60000,
-    });
+    suggestion.responseBy = interaction.user.id;
+    suggestion.responseReason = modalInteraction.fields.getTextInputValue('reasonInput');
+    suggestion.status = SuggestionStatus.APPROVED;
 
-    await submitInteraction.reply({
+    await modalInteraction.reply({
       embeds: [successEmbed("Suggestion approved")],
       ephemeral: true,
     });

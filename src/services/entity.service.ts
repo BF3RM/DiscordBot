@@ -11,7 +11,7 @@ export class BaseEntityService<Entity extends BaseEntity> {
     private readonly defaultRelations: string[] = []
   ) {}
 
-  protected async init() {
+  async init() {
     const dataSource = await getDatabaseConnection();
     this.repository = dataSource.getRepository(this.entityType);
   }
