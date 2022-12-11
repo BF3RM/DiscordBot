@@ -3,25 +3,23 @@ import {
   Client,
   Collection,
   DiscordAPIError,
-  GatewayIntentBits,
   Guild,
   Interaction,
-  Partials,
   REST,
   Routes,
 } from "discord.js";
 import { getBotToken } from "../config";
 import { runMigrations } from "../services";
 
-import { BaseButtonHandler, loadButtonHandlers } from "./button";
+import { ButtonHandler } from "./button";
 import { getClientInstance } from "./client";
 import { Command } from "./command";
-import { loadCommands } from "./loaders";
+import { loadCommands, loadButtonHandlers } from "./loaders";
 
 export class Bot {
   private client: Client;
   private commands: Collection<string, Command>;
-  private buttonHandlers: Collection<string, BaseButtonHandler>;
+  private buttonHandlers: Collection<string, ButtonHandler>;
 
   constructor() {
     this.client = getClientInstance();
@@ -68,25 +66,8 @@ export class Bot {
       }
 
       const handler = this.buttonHandlers.get(prefix);
-      if (!handler) {
-        console.warn(
-          `[Bot] Received button interaction for unsupported prefix: ${prefix}`
-        );
-        await interaction.reply({
-          content: "An error has occurred",
-          ephemeral: true,
-        });
-        return;
-      }
-
-      try {
-        await handler.handle(interaction);
-      } catch (err) {
-        await interaction.followUp({
-          content: "An error has occurred",
-          ephemeral: true,
-        });
-      }
+      if (!handler) return;
+      await handler.handle(interaction);
       return;
     }
 

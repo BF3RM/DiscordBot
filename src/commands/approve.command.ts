@@ -20,9 +20,9 @@ export default createContextMenuCommand(
 
     const suggestionService = await SuggestionEntityService.getInstance();
 
-    const suggestion = await suggestionService.findOne({
-      messageId: interaction.targetMessage.id,
-    });
+    const suggestion = await suggestionService.findByMessageId(
+      interaction.targetMessage.id
+    );
 
     if (!suggestion) {
       await interaction.reply({
@@ -44,10 +44,15 @@ export default createContextMenuCommand(
         )
       );
 
-    const modalInteraction = await ModalService.showModal(interaction, modal, 120_000);
+    const modalInteraction = await ModalService.showModal(
+      interaction,
+      modal,
+      120_000
+    );
 
     suggestion.responseBy = interaction.user.id;
-    suggestion.responseReason = modalInteraction.fields.getTextInputValue('reasonInput');
+    suggestion.responseReason =
+      modalInteraction.fields.getTextInputValue("reasonInput");
     suggestion.status = SuggestionStatus.APPROVED;
 
     await modalInteraction.reply({

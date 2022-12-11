@@ -2,6 +2,7 @@ import path from "node:path";
 import fs from "node:fs";
 import { Collection } from "discord.js";
 import { Command } from "./command";
+import { ButtonHandler } from "./button";
 
 const fileLoaderFactory =
   <T extends Record<string, any>>(factoryPath: string, key: keyof T) =>
@@ -29,4 +30,9 @@ const fileLoaderFactory =
 export const loadCommands = fileLoaderFactory<Command>(
   "commands",
   "commandName"
+);
+
+export const loadButtonHandlers = fileLoaderFactory<ButtonHandler>(
+  "buttons",
+  "prefix"
 );

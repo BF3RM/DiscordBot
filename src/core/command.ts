@@ -44,7 +44,10 @@ export const createCommand = (
       if (interaction.deferred) {
         await interaction.editReply({ content: "An error has occurred" });
       } else {
-        await interaction.reply({ content: "An error has occurred" });
+        await interaction.reply({
+          content: "An error has occurred",
+          ephemeral: true,
+        });
       }
     }
   },

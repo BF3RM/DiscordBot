@@ -1,52 +1,42 @@
-import fs from "node:fs";
-import path from "node:path";
+import { ButtonInteraction } from "discord.js";
 
-import { ButtonInteraction, Collection } from "discord.js";
+export interface ButtonHandler {
+  prefix: string;
+  handle(interaction: ButtonInteraction): Promise<void>;
+}
 
-import { EsModule } from "./types";
-
-export const loadButtonHandlers = () => {
-  const handlersPath = path.join(__dirname, "..", "buttons");
-  const buttonHandlers = new Collection<string, BaseButtonHandler>();
-
-  const handlerFiles = fs
-    .readdirSync(handlersPath)
-    .filter((file) => file.endsWith(".js") || file.endsWith(".ts"));
-
-  for (const file of handlerFiles) {
-    const { default: handlerType } =
-      require(`${handlersPath}/${file}`) as EsModule<BaseButtonHandler>;
-
-    const handler = new handlerType();
-
-    buttonHandlers.set(handler.customIdPrefix, handler);
-  }
-
-  return buttonHandlers;
+export const getCommandArguments = (customId: string) => {
+  const args = customId.split("#");
+  args.shift(); // Remove prefix
+  return args;
 };
 
-export abstract class BaseButtonHandler {
-  constructor(public readonly customIdPrefix: string) {
-    if (customIdPrefix.includes("#")) {
-      throw new Error("Prefix can not contain a #");
-    }
+export const createButtonHandler = (
+  prefix: string,
+  handle: (interaction: ButtonInteraction, args: string[]) => Promise<void>
+): ButtonHandler => {
+  if (prefix.includes("#")) {
+    throw new Error("Prefix is not allowed to contain a #");
   }
 
-  protected getArguments(
-    interaction: ButtonInteraction,
-    requiredAmount?: number
-  ): string[] {
-    const args = interaction.customId.split("#");
-    args.shift(); // Remove prefix
+  return {
+    prefix,
+    handle: async (interaction: ButtonInteraction) => {
+      const args = getCommandArguments(interaction.customId);
 
-    if (requiredAmount !== undefined && args.length !== requiredAmount) {
-      throw new Error(
-        `Invalid amount of arguments, expected ${requiredAmount}, got ${args.length}`
-      );
-    }
-
-    return args;
-  }
-
-  public abstract handle(interaction: ButtonInteraction): Promise<void>;
-}
+      try {
+        await handle(interaction, args);
+      } catch (err) {
+        console.error(`[ButtonHandler] [${prefix}] An error has occurred`, err);
+        if (interaction.deferred) {
+          await interaction.editReply({ content: "An error has occurred" });
+        } else {
+          await interaction.reply({
+            content: "An error has occurred",
+            ephemeral: true,
+          });
+        }
+      }
+    },
+  };
+};

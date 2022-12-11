@@ -5,7 +5,7 @@ import { UserAlreadyVotedError, SuggestionEntityService } from "../services";
 import { errorEmbed, fetchChannelMessage, successEmbed } from "../utils";
 
 export default createButtonHandler(
-  "upvoteSuggestion",
+  "downvoteSuggestion",
   async (interaction, args) => {
     const suggestionService = await SuggestionEntityService.getInstance();
 
@@ -33,7 +33,7 @@ export default createButtonHandler(
     }
 
     try {
-      const updatedSuggestion = await suggestionService.addUserUpvote(
+      const updatedSuggestion = await suggestionService.addUserDownvote(
         suggestion.id,
         interaction.user
       );
@@ -48,13 +48,13 @@ export default createButtonHandler(
       await originalMessage.edit({ embeds: [suggestionEmbed] });
 
       await interaction.reply({
-        embeds: [successEmbed("Upvoted suggestion")],
+        embeds: [successEmbed("Downvoted suggestion")],
         ephemeral: true,
       });
     } catch (err) {
       if (err instanceof UserAlreadyVotedError) {
         await interaction.reply({
-          embeds: [errorEmbed(`You have already upvoted this suggestion`)],
+          embeds: [errorEmbed(`You have already downvoted this suggestion`)],
           ephemeral: true,
         });
       }
