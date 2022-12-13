@@ -1,7 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 // import { BaseCommand } from "../core";
 
-import { createCommand } from "../core";
+import { defineCommand } from "../core";
 
 // export default class SetupCommand extends BaseCommand {
 //   constructor() {
@@ -29,10 +29,11 @@ import { createCommand } from "../core";
 //   }
 // }
 
-export default createCommand(
-  "setup",
-  (builder) => builder.setDescription("Set up suggestion shietz"),
-  async (interaction) => {
+export default defineCommand({
+  name: "setup",
+  configure: (builder) => builder.setDescription("Set up suggestion shietz"),
+
+  async execute(interaction) {
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
         .setCustomId("newSuggestion")
@@ -44,5 +45,5 @@ export default createCommand(
       content: "Yow yowww you wanna suggest stuffz?",
       components: [row],
     });
-  }
-);
+  },
+});

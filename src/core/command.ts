@@ -24,13 +24,26 @@ export interface Command {
     | RESTPostAPIContextMenuApplicationCommandsJSONBody;
 }
 
-export const createCommand = (
-  commandName: string,
-  configure: (builder: SlashCommandBuilder) => ConfiguredSlashCommandBuilder,
-  execute: (interaction: ChatInputCommandInteraction) => Promise<void>,
-  autocomplete?: (interaction: AutocompleteInteraction) => Promise<void>
-): Command => ({
-  commandName,
+export interface CommandDefinition {
+  name: string;
+  configure: (builder: SlashCommandBuilder) => ConfiguredSlashCommandBuilder;
+  execute: (interaction: ChatInputCommandInteraction) => Promise<void>;
+  autocomplete?: (interaction: AutocompleteInteraction) => Promise<void>;
+}
+
+export interface ContextMenuCommandDefinition {
+  name: string;
+  type: ContextMenuCommandType;
+  execute: (interaction: ContextMenuCommandInteraction) => Promise<void>;
+}
+
+export const defineCommand = ({
+  name,
+  configure,
+  execute,
+  autocomplete,
+}: CommandDefinition): Command => ({
+  commandName: name,
   onCommand: async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
@@ -38,7 +51,7 @@ export const createCommand = (
       await execute(interaction);
     } catch (err) {
       console.error(
-        `[ContextMenuCommand] [${commandName}] An error has occurred`,
+        `[ContextMenuCommand] [${name}] An error has occurred`,
         err
       );
       if (interaction.deferred) {
@@ -54,8 +67,7 @@ export const createCommand = (
   onAutocomplete: (interaction) =>
     autocomplete ? autocomplete(interaction) : interaction.respond([]),
 
-  toJSON: () =>
-    configure(new SlashCommandBuilder()).setName(commandName).toJSON(),
+  toJSON: () => configure(new SlashCommandBuilder()).setName(name).toJSON(),
 });
 
 /**
@@ -64,12 +76,12 @@ export const createCommand = (
  * @param type context menu command type
  * @param execute callback to execute on invoke
  */
-export const createContextMenuCommand = (
-  commandName: string,
-  type: ContextMenuCommandType,
-  execute: (interaction: ContextMenuCommandInteraction) => Promise<void>
-): Command => ({
-  commandName,
+export const defineContextMenuCommand = ({
+  name,
+  type,
+  execute,
+}: ContextMenuCommandDefinition): Command => ({
+  commandName: name,
   onCommand: async (interaction) => {
     if (!interaction.isContextMenuCommand()) return;
 
@@ -78,7 +90,7 @@ export const createContextMenuCommand = (
     } catch (err) {
       await interaction.reply({ content: "An error has occurred" });
       console.error(
-        `[ContextMenuCommand] [${commandName}] An error has occurred`,
+        `[ContextMenuCommand] [${name}] An error has occurred`,
         err
       );
     }
@@ -88,7 +100,7 @@ export const createContextMenuCommand = (
   },
 
   toJSON: () =>
-    new ContextMenuCommandBuilder().setName(commandName).setType(type).toJSON(),
+    new ContextMenuCommandBuilder().setName(name).setType(type).toJSON(),
 });
 
 // import fs from "node:fs";

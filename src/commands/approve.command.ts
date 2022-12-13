@@ -6,16 +6,17 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
-import { createContextMenuCommand } from "../core";
+import { defineContextMenuCommand } from "../core";
 import { SuggestionStatus } from "../entities";
 import { SuggestionEntityService } from "../services";
 import { ModalService } from "../services/modal.service";
 import { errorEmbed, successEmbed } from "../utils";
 
-export default createContextMenuCommand(
-  "Approve suggestion",
-  ApplicationCommandType.Message,
-  async (interaction) => {
+export default defineContextMenuCommand({
+  name: "Approve suggestion",
+  type: ApplicationCommandType.Message,
+
+  async execute(interaction) {
     if (!interaction.isMessageContextMenuCommand()) return;
 
     const suggestionService = await SuggestionEntityService.getInstance();
@@ -59,5 +60,5 @@ export default createContextMenuCommand(
       embeds: [successEmbed("Suggestion approved")],
       ephemeral: true,
     });
-  }
-);
+  },
+});

@@ -1,4 +1,4 @@
-import { Client, Colors } from "discord.js";
+import { Colors } from "discord.js";
 
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
@@ -6,7 +6,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(duration);
 dayjs.extend(relativeTime);
 
-import { createCommand } from "../core";
+import { defineCommand } from "../core";
 import { HeraServerInfo, HeraService } from "../services";
 import { createDefaultEmbed, errorEmbed } from "../utils";
 
@@ -41,15 +41,16 @@ function createServerEmbed(server: HeraServerInfo) {
     );
 }
 
-export default createCommand(
-  "serverlist",
-  (builder) =>
+export default defineCommand({
+  name: "serverlist",
+  configure: (builder) =>
     builder
       .setDescription("Receive server info of Reality Mod servers")
       .addStringOption((option) =>
         option.setName("name").setDescription("Server name")
       ),
-  async (interaction) => {
+
+  async execute(interaction) {
     const heraService = HeraService.getInstance();
 
     await interaction.deferReply();
@@ -74,5 +75,5 @@ export default createCommand(
       embeds: embeds,
       content: `Found ${amountOfServers} servers, displaying top ${servers.length} by players.`,
     });
-  }
-);
+  },
+});
