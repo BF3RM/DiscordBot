@@ -5,16 +5,16 @@ import {
   ModalActionRowComponentBuilder,
   ButtonBuilder,
   ButtonStyle,
-  TextChannel,
   EmbedBuilder,
   Colors,
 } from "discord.js";
-import { createModal } from "../core";
+
+import { defineModal } from "../core";
 import { GuildConfigService, SuggestionEntityService } from "../services";
 
-export default createModal(
-  "suggestionModal",
-  (builder) => {
+export default defineModal({
+  prefix: "suggestionModal",
+  build(builder) {
     const titleText = new TextInputBuilder()
       .setCustomId("titleInput")
       .setLabel("Title")
@@ -40,7 +40,7 @@ export default createModal(
       .setTitle("New suggestion")
       .addComponents(firstRow, secondRow);
   },
-  async (interaction) => {
+  async handle(interaction) {
     if (!interaction.inGuild()) return;
 
     const suggestionService = await SuggestionEntityService.getInstance();
@@ -101,5 +101,5 @@ export default createModal(
           .setDescription(`[Click here to view the event](${message.url})`),
       ],
     });
-  }
-);
+  },
+});

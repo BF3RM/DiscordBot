@@ -17,6 +17,12 @@ export interface Modal<Args extends any[] = []> extends ModalHandler {
   ): Promise<void>;
 }
 
+export interface ModalDefinition<Args extends any[] = []> {
+  prefix: string;
+  build(builder: ModalBuilder, ...args: Args): ModalBuilder;
+  handle(interaction: ModalSubmitInteraction, ...args: Args): Promise<void>;
+}
+
 export const getModalArguments = <Args extends string[]>(
   customId: string
 ): Args => {
@@ -25,24 +31,31 @@ export const getModalArguments = <Args extends string[]>(
   return args as Args;
 };
 
-export const createModal = <Args extends string[] = []>(
-  prefix: string,
-  build: (builder: ModalBuilder, ...args: Args) => ModalBuilder,
-  handle: (interaction: ModalSubmitInteraction, ...args: Args) => Promise<void>
+// export const defineModal = <Args extends string[] = []>(
+//   prefix: string,
+//   build: (builder: ModalBuilder, ...args: Args) => ModalBuilder,
+//   handle: (interaction: ModalSubmitInteraction, ...args: Args) => Promise<void>
+// ): Modal<Args> => {
+
+export const defineModal = <Args extends string[] = []>(
+  definition: ModalDefinition<Args>
 ): Modal<Args> => {
-  if (prefix.includes("#")) {
+  if (definition.prefix.includes("#")) {
     throw new Error("Prefix is not allowed to contain a #");
   }
 
   return {
-    prefix,
+    prefix: definition.prefix,
     handle: async (interaction: ModalSubmitInteraction) => {
       const args = getModalArguments<Args>(interaction.customId);
 
       try {
-        await handle(interaction, ...args);
+        await definition.handle(interaction, ...args);
       } catch (err) {
-        console.error(`[Modal] [${prefix}] An error has occurred`, err);
+        console.error(
+          `[Modal] [${definition.prefix}] An error has occurred`,
+          err
+        );
         if (interaction.deferred) {
           await interaction.editReply({ content: "An error has occurred" });
         } else {
@@ -57,8 +70,11 @@ export const createModal = <Args extends string[] = []>(
       interaction: CommandInteraction | ButtonInteraction,
       ...args: Args
     ) => {
-      const customId = [prefix, ...(args || [])].join("#");
-      const modal = build(new ModalBuilder().setCustomId(customId), ...args);
+      const customId = [definition.prefix, ...(args || [])].join("#");
+      const modal = definition.build(
+        new ModalBuilder().setCustomId(customId),
+        ...args
+      );
 
       await interaction.showModal(modal);
     },
