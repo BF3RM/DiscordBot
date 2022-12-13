@@ -37,7 +37,7 @@ export const getModalArguments = <Args extends string[]>(
 //   handle: (interaction: ModalSubmitInteraction, ...args: Args) => Promise<void>
 // ): Modal<Args> => {
 
-export const defineModal = <Args extends string[] = []>(
+export const defineModal = <Args extends any[] = []>(
   definition: ModalDefinition<Args>
 ): Modal<Args> => {
   if (definition.prefix.includes("#")) {

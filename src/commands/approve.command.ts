@@ -1,16 +1,10 @@
-import {
-  ActionRowBuilder,
-  ApplicationCommandType,
-  ModalActionRowComponentBuilder,
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
-} from "discord.js";
+import { ApplicationCommandType } from "discord.js";
+
 import { defineContextMenuCommand } from "../core";
-import { SuggestionStatus } from "../entities";
 import { SuggestionEntityService } from "../services";
-import { ModalService } from "../services/modal.service";
-import { errorEmbed, successEmbed } from "../utils";
+import { errorEmbed } from "../utils";
+
+import ApproveSuggestionModal from "../modals/approve-suggestion.modal";
 
 export default defineContextMenuCommand({
   name: "Approve suggestion",
@@ -33,32 +27,6 @@ export default defineContextMenuCommand({
       return;
     }
 
-    const modal = new ModalBuilder()
-      .setTitle(`Approve #${suggestion.id}?`)
-      .setCustomId("approveModal")
-      .setComponents(
-        new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
-          new TextInputBuilder()
-            .setCustomId("reasonInput")
-            .setLabel("Reason")
-            .setStyle(TextInputStyle.Paragraph)
-        )
-      );
-
-    const modalInteraction = await ModalService.showModal(
-      interaction,
-      modal,
-      120_000
-    );
-
-    suggestion.responseBy = interaction.user.id;
-    suggestion.responseReason =
-      modalInteraction.fields.getTextInputValue("reasonInput");
-    suggestion.status = SuggestionStatus.APPROVED;
-
-    await modalInteraction.reply({
-      embeds: [successEmbed("Suggestion approved")],
-      ephemeral: true,
-    });
+    await ApproveSuggestionModal.show(interaction, suggestion.id);
   },
 });
