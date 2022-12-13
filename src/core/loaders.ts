@@ -3,6 +3,7 @@ import fs from "node:fs";
 import { Collection } from "discord.js";
 import { Command } from "./command";
 import { ButtonHandler } from "./button";
+import { Modal, ModalHandler } from "./modal";
 
 const fileLoaderFactory =
   <T extends Record<string, any>>(factoryPath: string, key: keyof T) =>
@@ -34,5 +35,10 @@ export const loadCommands = fileLoaderFactory<Command>(
 
 export const loadButtonHandlers = fileLoaderFactory<ButtonHandler>(
   "buttons",
+  "prefix"
+);
+
+export const loadModalHandlers = fileLoaderFactory<ModalHandler>(
+  "modals",
   "prefix"
 );

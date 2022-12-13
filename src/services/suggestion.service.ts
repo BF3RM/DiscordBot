@@ -1,12 +1,19 @@
-import { bold, Client, EmbedBuilder, User } from "discord.js";
+import { bold, Client, Colors, EmbedBuilder, User } from "discord.js";
 import { getClientInstance } from "../core";
-import { SuggestionEntity } from "../entities";
+import { SuggestionEntity, SuggestionStatus } from "../entities";
 import { BaseEntityService } from "./entity.service";
 
 export class UserAlreadyVotedError extends Error {
   constructor(public readonly user: User, public readonly type: string) {
     super(`User ${user.id} already ${type}`);
   }
+}
+
+export interface CreateSuggestionInput {
+  channelId: string;
+  authorId: string;
+  title: string;
+  message: string;
 }
 
 export class SuggestionEntityService {
@@ -37,6 +44,30 @@ export class SuggestionEntityService {
 
   public async findByMessageId(messageId: string) {
     return this.entityService.findOne({ messageId });
+  }
+
+  public async create(input: CreateSuggestionInput): Promise<SuggestionEntity> {
+    return this.entityService.create({
+      channelId: input.channelId,
+      suggestedBy: input.authorId,
+      status: SuggestionStatus.PENDING,
+      title: input.title,
+      message: input.message,
+      // imageUrl: attachement?.url,
+      upvotes: [],
+      downvotes: [],
+    });
+  }
+
+  public updateMessageAndThreadIds(
+    suggestionId: number,
+    messageId: string,
+    threadId: string
+  ): Promise<SuggestionEntity> {
+    return this.entityService.update(suggestionId, {
+      messageId,
+      threadId,
+    });
   }
 
   public async addUserUpvote(
@@ -97,6 +128,11 @@ export class SuggestionEntityService {
     const totalUpvotes = suggestion.upvotes.length;
     const totalDownvotes = suggestion.downvotes.length;
     const totalVotes = totalUpvotes + totalDownvotes;
+
+    if (totalUpvotes === 0) {
+      return `⏫ Upvotes: ${totalUpvotes}\n⏬ Downvotes: ${totalDownvotes}`;
+    }
+
     const totalUpvotesPercent = Math.round((totalUpvotes / totalVotes) * 100);
     const totalDownvotesPercent = Math.round(
       (totalDownvotes / totalVotes) * 100
@@ -114,6 +150,19 @@ export class SuggestionEntityService {
     }
 
     return `${upvotesStr}\n${downvotesStr}`;
+  }
+
+  public getStatusColor(suggestion: SuggestionEntity) {
+    switch (suggestion.status) {
+      case SuggestionStatus.PENDING:
+        return "#0099ff";
+      case SuggestionStatus.APPROVED:
+        return Colors.Green;
+      case SuggestionStatus.DENIED:
+        return Colors.Red;
+      case SuggestionStatus.IMPLEMENTED:
+        return Colors.Grey;
+    }
   }
 
   public async createSuggestionEmbed(suggestion: SuggestionEntity) {

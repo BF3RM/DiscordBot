@@ -8,41 +8,45 @@ import {
 import { createButtonHandler } from "../core/button";
 import { ModalService } from "../services/modal.service";
 
+import NewSuggestionModal from "../modals/new-suggestion.modal";
+
 export default createButtonHandler("newSuggestion", async (interaction) => {
-  const titleText = new TextInputBuilder()
-    .setCustomId("titleInput")
-    .setLabel("Title")
-    .setStyle(TextInputStyle.Short)
-    .setRequired(true);
+  await NewSuggestionModal.show(interaction);
 
-  const descriptionText = new TextInputBuilder()
-    .setLabel("Description")
-    .setCustomId("descriptionInput")
-    .setStyle(TextInputStyle.Paragraph)
-    .setRequired(true);
+  // const titleText = new TextInputBuilder()
+  //   .setCustomId("titleInput")
+  //   .setLabel("Title")
+  //   .setStyle(TextInputStyle.Short)
+  //   .setRequired(true);
 
-  const firstRow =
-    new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
-      titleText
-    );
-  const secondRow =
-    new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
-      descriptionText
-    );
+  // const descriptionText = new TextInputBuilder()
+  //   .setLabel("Description")
+  //   .setCustomId("descriptionInput")
+  //   .setStyle(TextInputStyle.Paragraph)
+  //   .setRequired(true);
 
-  const modal = new ModalBuilder()
-    .setTitle("New suggestion")
-    .setCustomId("suggestionModal")
-    .addComponents(firstRow, secondRow);
+  // const firstRow =
+  //   new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
+  //     titleText
+  //   );
+  // const secondRow =
+  //   new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
+  //     descriptionText
+  //   );
 
-  const submitInteraction = await ModalService.showModal(
-    interaction,
-    modal,
-    120_000
-  );
+  // const modal = new ModalBuilder()
+  //   .setTitle("New suggestion")
+  //   .setCustomId("suggestionModal")
+  //   .addComponents(firstRow, secondRow);
 
-  await submitInteraction.reply({
-    content: "DONE WITH YOU YOU LAZY FUCK",
-    ephemeral: true,
-  });
+  // const submitInteraction = await ModalService.showModal(
+  //   interaction,
+  //   modal,
+  //   120_000
+  // );
+
+  // await submitInteraction.reply({
+  //   content: "DONE WITH YOU YOU LAZY FUCK",
+  //   ephemeral: true,
+  // });
 });

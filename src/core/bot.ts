@@ -14,12 +14,14 @@ import { runMigrations } from "../services";
 import { ButtonHandler } from "./button";
 import { getClientInstance } from "./client";
 import { Command } from "./command";
-import { loadCommands, loadButtonHandlers } from "./loaders";
+import { loadCommands, loadButtonHandlers, loadModalHandlers } from "./loaders";
+import { ModalHandler } from "./modal";
 
 export class Bot {
   private client: Client;
   private commands: Collection<string, Command>;
   private buttonHandlers: Collection<string, ButtonHandler>;
+  private modalHandlers: Collection<string, ModalHandler>;
 
   constructor() {
     this.client = getClientInstance();
@@ -29,6 +31,9 @@ export class Bot {
 
     this.buttonHandlers = loadButtonHandlers();
     console.log(`[Bot] Loaded ${this.buttonHandlers.size} button handlers`);
+
+    this.modalHandlers = loadModalHandlers();
+    console.log(`[Bot] Loaded ${this.modalHandlers.size} modal handlers`);
   }
 
   public async start() {
@@ -66,6 +71,21 @@ export class Bot {
       }
 
       const handler = this.buttonHandlers.get(prefix);
+      if (!handler) return;
+      await handler.handle(interaction);
+      return;
+    }
+
+    if (interaction.isModalSubmit()) {
+      const prefix = interaction.customId.split("#").shift();
+      if (!prefix) {
+        console.error(
+          "[Bot] Received modal submit interaction without custom id"
+        );
+        return;
+      }
+
+      const handler = this.modalHandlers.get(prefix);
       if (!handler) return;
       await handler.handle(interaction);
       return;
