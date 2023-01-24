@@ -129,7 +129,7 @@ export class SuggestionEntityService {
     const totalDownvotes = suggestion.downvotes.length;
     const totalVotes = totalUpvotes + totalDownvotes;
 
-    if (totalUpvotes === 0) {
+    if (totalVotes === 0) {
       return `⏫ Upvotes: ${totalUpvotes}\n⏬ Downvotes: ${totalDownvotes}`;
     }
 
@@ -172,7 +172,7 @@ export class SuggestionEntityService {
     }
 
     const embed = new EmbedBuilder()
-      .setColor("#0099ff")
+      .setColor(this.getStatusColor(suggestion))
       .setTitle(`#${suggestion.id}: ${suggestion.title}`)
       .setAuthor({
         name: user.tag,
