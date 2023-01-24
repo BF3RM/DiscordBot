@@ -38,6 +38,7 @@ export const getDatabaseConnection = async (): Promise<DataSource> => {
   dataSource = getDatabaseDataSource();
 
   if (!dataSource.isInitialized) {
+    console.log("[Database] Initializing...");
     dataSource = await dataSource.initialize();
   }
 
@@ -46,5 +47,6 @@ export const getDatabaseConnection = async (): Promise<DataSource> => {
 
 export const runMigrations = async () => {
   const dataSource = await getDatabaseConnection();
+  console.log("[Database] Running migrations...");
   return dataSource.runMigrations();
 };

@@ -39,7 +39,6 @@ export class Bot {
   public async start() {
     console.log("[Bot] Starting...");
 
-    console.log("[Bot] Running database migrations");
     await runMigrations();
 
     this.client.on("ready", this.onReady.bind(this));
