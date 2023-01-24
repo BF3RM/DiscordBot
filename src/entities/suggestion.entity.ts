@@ -32,7 +32,7 @@ export class SuggestionEntity extends BaseEntity {
   title!: string;
 
   @Column()
-  message!: string;
+  description!: string;
 
   @Column({ nullable: true })
   imageUrl?: string;
@@ -42,6 +42,9 @@ export class SuggestionEntity extends BaseEntity {
 
   @Column({ nullable: true })
   responseReason?: string;
+
+  @Column({ nullable: true })
+  implementedBy?: string;
 
   @Column("text", { array: true })
   upvotes!: string[];

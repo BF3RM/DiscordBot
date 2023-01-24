@@ -52,7 +52,7 @@ export class SuggestionEntityService {
       suggestedBy: input.authorId,
       status: SuggestionStatus.PENDING,
       title: input.title,
-      message: input.message,
+      description: input.message,
       // imageUrl: attachement?.url,
       upvotes: [],
       downvotes: [],
@@ -178,7 +178,7 @@ export class SuggestionEntityService {
         name: user.tag,
         iconURL: user.displayAvatarURL(),
       })
-      .setDescription(suggestion.message)
+      .setDescription(suggestion.description)
       .setFields({ name: "Votes", value: this.generateVotesText(suggestion) });
 
     if (suggestion.imageUrl) {
