@@ -194,23 +194,72 @@ export class SuggestionService {
     return updatedSuggestion;
   }
 
-  public async approve(
+  public approve(suggestionId: number, user: User, responseReason: string) {
+    return this.respond(
+      suggestionId,
+      user,
+      SuggestionStatus.APPROVED,
+      responseReason
+    );
+  }
+
+  public deny(suggestionId: number, user: User, responseReason: string) {
+    return this.respond(
+      suggestionId,
+      user,
+      SuggestionStatus.DENIED,
+      responseReason
+    );
+  }
+
+  public async respond(
     suggestionId: number,
     user: User,
+    responseStatus: SuggestionStatus.APPROVED | SuggestionStatus.DENIED,
     responseReason: string
   ) {
     const suggestion = await this.entityService.get(suggestionId);
     if (!suggestion) {
-      throw new Error("Suggestion not found");
+      throw new SuggestionNotFoundError();
+    }
+
+    const originalMessage = await fetchChannelMessage(
+      this.client,
+      suggestion.channelId,
+      suggestion.messageId!
+    );
+    if (!originalMessage) {
+      throw new SuggestionNotFoundError();
     }
 
     if (suggestion.status !== SuggestionStatus.PENDING) {
       throw new SuggestionAlreadyRepliedError(suggestion);
     }
 
-    suggestion.status = SuggestionStatus.APPROVED;
+    suggestion.status = responseStatus;
     suggestion.responseBy = user.id;
     suggestion.responseReason = responseReason;
+
+    const updatedSuggestion = await this.entityService.update(
+      suggestion.id,
+      suggestion
+    );
+
+    const suggestionEmbed = await this.createSuggestionEmbed(updatedSuggestion);
+
+    await originalMessage.edit({
+      embeds: [suggestionEmbed],
+      components: [this.createActionRow(true)],
+    });
+
+    if (originalMessage.thread) {
+      await originalMessage.thread.edit({
+        archived: true,
+        locked: true,
+      });
+    }
+
+    return updatedSuggestion;
   }
 
   public generateVotesText(suggestion: SuggestionEntity): string {
@@ -241,22 +290,25 @@ export class SuggestionService {
     return `${upvotesStr}\n${downvotesStr}`;
   }
 
-  public createActionRow() {
+  public createActionRow(disabled = false) {
     return new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
         .setCustomId(`upvoteSuggestion`)
         .setLabel("Upvote")
         .setStyle(ButtonStyle.Success)
-        .setEmoji("⏫"),
+        .setEmoji("⏫")
+        .setDisabled(disabled),
       new ButtonBuilder()
         .setCustomId(`downvoteSuggestion`)
         .setLabel("Downvote")
         .setStyle(ButtonStyle.Danger)
-        .setEmoji("⏬"),
+        .setEmoji("⏬")
+        .setDisabled(disabled),
       new ButtonBuilder()
         .setCustomId(`editSuggestion`)
         .setLabel("Edit")
         .setStyle(ButtonStyle.Primary)
+        .setDisabled(disabled)
     );
   }
 
@@ -292,6 +344,37 @@ export class SuggestionService {
     if (suggestion.imageUrl) {
       embed.setImage(suggestion.imageUrl);
     }
+
+    let responseBy: User | undefined;
+    if (suggestion.responseBy) {
+      responseBy = this.client.users.cache.get(suggestion.responseBy);
+    }
+
+    if (suggestion.status === SuggestionStatus.APPROVED) {
+      embed.addFields(
+        {
+          name: "Approved by",
+          value: responseBy?.tag || "Unknown#0000",
+        },
+        {
+          name: "Reason",
+          value: suggestion.responseReason || "No reason given",
+        }
+      );
+    } else if (suggestion.status === SuggestionStatus.DENIED) {
+      embed.addFields(
+        {
+          name: "Denied by",
+          value: responseBy?.tag || "Unknown#0000",
+        },
+        {
+          name: "Reason",
+          value: suggestion.responseReason || "No reason given",
+        }
+      );
+    }
+
+    // TODO: Implemented status
 
     return embed;
   }

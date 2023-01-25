@@ -5,6 +5,7 @@ import { SuggestionService } from "../services";
 import { errorEmbed } from "../utils";
 
 import ApproveSuggestionModal from "../modals/approve-suggestion.modal";
+import { SuggestionStatus } from "../entities";
 
 export default defineContextMenuCommand({
   name: "Approve suggestion",
@@ -22,6 +23,16 @@ export default defineContextMenuCommand({
     if (!suggestion) {
       await interaction.reply({
         embeds: [errorEmbed("Suggestion not found")],
+        ephemeral: true,
+      });
+      return;
+    }
+
+    if (suggestion.status !== SuggestionStatus.PENDING) {
+      await interaction.reply({
+        embeds: [
+          errorEmbed("Suggestion has already been approved or rejected!"),
+        ],
         ephemeral: true,
       });
       return;

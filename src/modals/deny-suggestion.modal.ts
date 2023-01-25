@@ -5,6 +5,7 @@ import {
   TextInputStyle,
 } from "discord.js";
 import { defineModal } from "../core";
+import { SuggestionService } from "../services";
 import { successEmbed } from "../utils";
 
 export default defineModal({
@@ -22,9 +23,18 @@ export default defineModal({
       );
   },
   async handle(interaction, suggestionId: number) {
-    await interaction.reply({
+    const suggestionService = await SuggestionService.getInstance();
+
+    await interaction.deferReply({ ephemeral: true });
+
+    await suggestionService.deny(
+      suggestionId,
+      interaction.user,
+      interaction.fields.getTextInputValue("reasonInput")
+    );
+
+    await interaction.editReply({
       embeds: [successEmbed("Suggestion denied")],
-      ephemeral: true,
     });
   },
 });
