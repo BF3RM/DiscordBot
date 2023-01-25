@@ -1,6 +1,19 @@
-import { bold, Client, Colors, EmbedBuilder, User } from "discord.js";
+import {
+  ActionRowBuilder,
+  bold,
+  ButtonBuilder,
+  ButtonStyle,
+  Client,
+  Colors,
+  EmbedBuilder,
+  Message,
+  ThreadChannel,
+  User,
+} from "discord.js";
+import { getSuggestionChannelId } from "../config";
 import { getClientInstance } from "../core";
 import { SuggestionEntity, SuggestionStatus } from "../entities";
+import { fetchChannelMessage, fetchTextChannel } from "../utils";
 import { BaseEntityService } from "./entity.service";
 
 export class UserAlreadyVotedError extends Error {
@@ -9,30 +22,44 @@ export class UserAlreadyVotedError extends Error {
   }
 }
 
+export class SuggestionNotFoundError extends Error {
+  constructor() {
+    super(`Suggestion not found`);
+  }
+}
+
+export class SuggestionAlreadyRepliedError extends Error {
+  constructor(public readonly suggestion: SuggestionEntity) {
+    super(`Suggestion ${suggestion.id} was already approved or rejected`);
+  }
+}
+
 export interface CreateSuggestionInput {
-  channelId: string;
   authorId: string;
   title: string;
   message: string;
 }
 
-export class SuggestionEntityService {
+export interface CreateSuggestionOutput {
+  suggestion: SuggestionEntity;
+  message: Message;
+  thread: ThreadChannel;
+}
+
+export class SuggestionService {
   constructor(
     private readonly client: Client,
     private readonly entityService: BaseEntityService<SuggestionEntity>
   ) {}
 
-  private static instance: SuggestionEntityService;
+  private static instance: SuggestionService;
 
-  public static async getInstance(): Promise<SuggestionEntityService> {
+  public static async getInstance(): Promise<SuggestionService> {
     if (!this.instance) {
       const entityService = new BaseEntityService(SuggestionEntity);
       await entityService.init();
 
-      this.instance = new SuggestionEntityService(
-        getClientInstance(),
-        entityService
-      );
+      this.instance = new SuggestionService(getClientInstance(), entityService);
     }
 
     return this.instance;
@@ -46,37 +73,58 @@ export class SuggestionEntityService {
     return this.entityService.findOne({ messageId });
   }
 
-  public async create(input: CreateSuggestionInput): Promise<SuggestionEntity> {
-    return this.entityService.create({
-      channelId: input.channelId,
+  public async create(
+    input: CreateSuggestionInput
+  ): Promise<CreateSuggestionOutput> {
+    const suggestionChannel = await fetchTextChannel(
+      this.client,
+      getSuggestionChannelId()
+    );
+
+    const suggestion = await this.entityService.create({
+      channelId: suggestionChannel.id,
       suggestedBy: input.authorId,
       status: SuggestionStatus.PENDING,
       title: input.title,
       description: input.message,
-      // imageUrl: attachement?.url,
       upvotes: [],
       downvotes: [],
     });
-  }
 
-  public updateMessageAndThreadIds(
-    suggestionId: number,
-    messageId: string,
-    threadId: string
-  ): Promise<SuggestionEntity> {
-    return this.entityService.update(suggestionId, {
-      messageId,
-      threadId,
+    const suggestionEmbed = await this.createSuggestionEmbed(suggestion);
+    const row = this.createActionRow();
+
+    const message = await suggestionChannel.send({
+      embeds: [suggestionEmbed],
+      components: [row],
     });
+
+    const thread = await message.startThread({
+      name: `Suggestion ${suggestion.id}`,
+      autoArchiveDuration: 10080,
+      reason: `Created for suggestion ${suggestion.id}`,
+      rateLimitPerUser: 5,
+    });
+
+    this.entityService.update(suggestion.id, {
+      messageId: message.id,
+      threadId: thread.id,
+    });
+
+    return {
+      suggestion,
+      message,
+      thread,
+    };
   }
 
   public async addUserUpvote(
-    suggestionId: number,
+    message: Message,
     user: User
   ): Promise<SuggestionEntity> {
-    const suggestion = await this.entityService.get(suggestionId);
+    const suggestion = await this.findByMessageId(message.id);
     if (!suggestion) {
-      throw new Error("Suggestion not found");
+      throw new SuggestionNotFoundError();
     }
 
     // Remove downvote if it exists
@@ -91,19 +139,30 @@ export class SuggestionEntityService {
 
     suggestion.upvotes.push(user.id);
 
-    return this.entityService.update(suggestion.id, {
+    const updatedSuggestion = await this.entityService.update(suggestion.id, {
       downvotes: suggestion.downvotes,
       upvotes: suggestion.upvotes,
     });
+
+    const suggestionEmbed = EmbedBuilder.from(message.embeds[0]);
+
+    suggestionEmbed.setFields({
+      name: "Votes",
+      value: this.generateVotesText(updatedSuggestion),
+    });
+
+    await message.edit({ embeds: [suggestionEmbed] });
+
+    return updatedSuggestion;
   }
 
   public async addUserDownvote(
-    suggestionId: number,
+    message: Message,
     user: User
   ): Promise<SuggestionEntity> {
-    const suggestion = await this.entityService.get(suggestionId);
+    const suggestion = await this.findByMessageId(message.id);
     if (!suggestion) {
-      throw new Error("Suggestion not found");
+      throw new SuggestionNotFoundError();
     }
 
     // Remove downvote if it exists
@@ -118,10 +177,40 @@ export class SuggestionEntityService {
 
     suggestion.downvotes.push(user.id);
 
-    return this.entityService.update(suggestion.id, {
+    const updatedSuggestion = await this.entityService.update(suggestion.id, {
       downvotes: suggestion.downvotes,
       upvotes: suggestion.upvotes,
     });
+
+    const suggestionEmbed = EmbedBuilder.from(message.embeds[0]);
+
+    suggestionEmbed.setFields({
+      name: "Votes",
+      value: this.generateVotesText(updatedSuggestion),
+    });
+
+    await message.edit({ embeds: [suggestionEmbed] });
+
+    return updatedSuggestion;
+  }
+
+  public async approve(
+    suggestionId: number,
+    user: User,
+    responseReason: string
+  ) {
+    const suggestion = await this.entityService.get(suggestionId);
+    if (!suggestion) {
+      throw new Error("Suggestion not found");
+    }
+
+    if (suggestion.status !== SuggestionStatus.PENDING) {
+      throw new SuggestionAlreadyRepliedError(suggestion);
+    }
+
+    suggestion.status = SuggestionStatus.APPROVED;
+    suggestion.responseBy = user.id;
+    suggestion.responseReason = responseReason;
   }
 
   public generateVotesText(suggestion: SuggestionEntity): string {
@@ -150,6 +239,25 @@ export class SuggestionEntityService {
     }
 
     return `${upvotesStr}\n${downvotesStr}`;
+  }
+
+  public createActionRow() {
+    return new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`upvoteSuggestion`)
+        .setLabel("Upvote")
+        .setStyle(ButtonStyle.Success)
+        .setEmoji("⏫"),
+      new ButtonBuilder()
+        .setCustomId(`downvoteSuggestion`)
+        .setLabel("Downvote")
+        .setStyle(ButtonStyle.Danger)
+        .setEmoji("⏬"),
+      new ButtonBuilder()
+        .setCustomId(`editSuggestion`)
+        .setLabel("Edit")
+        .setStyle(ButtonStyle.Primary)
+    );
   }
 
   public getStatusColor(suggestion: SuggestionEntity) {

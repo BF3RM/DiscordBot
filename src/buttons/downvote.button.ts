@@ -1,57 +1,42 @@
-import { EmbedBuilder } from "discord.js";
+import { Colors, EmbedBuilder } from "discord.js";
 
 import { createButtonHandler } from "../core/button";
-import { UserAlreadyVotedError, SuggestionEntityService } from "../services";
-import { errorEmbed, fetchChannelMessage, successEmbed } from "../utils";
+import {
+  UserAlreadyVotedError,
+  SuggestionService,
+  SuggestionNotFoundError,
+} from "../services";
+import { errorEmbed } from "../utils";
 
 export default createButtonHandler(
   "downvoteSuggestion",
-  async (interaction, args) => {
-    const suggestionService = await SuggestionEntityService.getInstance();
-
-    const suggestion = await suggestionService.findById(parseInt(args[0]));
-    if (!suggestion) {
-      await interaction.followUp({
-        embeds: [errorEmbed("Failed to find suggestion")],
-        ephemeral: true,
-      });
-      return;
-    }
-
-    const originalMessage = await fetchChannelMessage(
-      interaction.client,
-      suggestion.channelId,
-      suggestion.messageId!
-    );
-
-    if (!originalMessage) {
-      await interaction.reply({
-        embeds: [errorEmbed("Failed to find original suggestion")],
-        ephemeral: true,
-      });
-      return;
-    }
+  async (interaction) => {
+    const suggestionService = await SuggestionService.getInstance();
 
     try {
-      const updatedSuggestion = await suggestionService.addUserDownvote(
-        suggestion.id,
+      await suggestionService.addUserDownvote(
+        interaction.message,
         interaction.user
       );
 
-      const suggestionEmbed = EmbedBuilder.from(originalMessage.embeds[0]);
-
-      suggestionEmbed.setFields({
-        name: "Votes",
-        value: suggestionService.generateVotesText(updatedSuggestion),
-      });
-
-      await originalMessage.edit({ embeds: [suggestionEmbed] });
-
       await interaction.reply({
-        embeds: [successEmbed("Downvoted suggestion")],
+        embeds: [
+          new EmbedBuilder()
+            .setColor(Colors.Green)
+            .setTitle("Downvoted suggestion")
+            .setDescription(
+              `[Click here to view the suggestion](${interaction.message.url})`
+            ),
+        ],
         ephemeral: true,
       });
     } catch (err) {
+      if (err instanceof SuggestionNotFoundError) {
+        await interaction.reply({
+          embeds: [errorEmbed("Failed to find original suggestion")],
+          ephemeral: true,
+        });
+      }
       if (err instanceof UserAlreadyVotedError) {
         await interaction.reply({
           embeds: [errorEmbed(`You have already downvoted this suggestion`)],

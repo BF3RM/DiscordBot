@@ -1,7 +1,7 @@
 import { ApplicationCommandType } from "discord.js";
 
 import { defineContextMenuCommand } from "../core";
-import { SuggestionEntityService } from "../services";
+import { SuggestionService } from "../services";
 import { errorEmbed } from "../utils";
 
 import ApproveSuggestionModal from "../modals/approve-suggestion.modal";
@@ -13,7 +13,7 @@ export default defineContextMenuCommand({
   async execute(interaction) {
     if (!interaction.isMessageContextMenuCommand()) return;
 
-    const suggestionService = await SuggestionEntityService.getInstance();
+    const suggestionService = await SuggestionService.getInstance();
 
     const suggestion = await suggestionService.findByMessageId(
       interaction.targetMessage.id

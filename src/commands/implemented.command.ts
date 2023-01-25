@@ -1,28 +1,33 @@
-// import { SlashCommandBuilder } from "discord.js";
+import { ApplicationCommandType } from "discord.js";
 
-// import {
-//   BaseSuggestionResponseCommand,
-//   SuggestionReplyContext,
-// } from "./base/response.command";
+import { defineContextMenuCommand } from "../core";
+import { SuggestionService } from "../services";
+import { errorEmbed, successEmbed } from "../utils";
 
-// export default class ImplementedCommand extends BaseSuggestionResponseCommand {
-//   constructor() {
-//     super("implemented");
-//   }
+export default defineContextMenuCommand({
+  name: "Implemented suggestion",
+  type: ApplicationCommandType.Message,
 
-//   public configure(builder: SlashCommandBuilder) {
-//     return builder
-//       .setDescription("Implements a suggestion")
-//       .addNumberOption((option) =>
-//         option
-//           .setName("id")
-//           .setDescription("The ID of the suggestion")
-//           .setRequired(true)
-//           .setAutocomplete(true)
-//       );
-//   }
+  async execute(interaction) {
+    if (!interaction.isMessageContextMenuCommand()) return;
 
-//   protected handleReply(ctx: SuggestionReplyContext): Promise<void> {
-//     throw new Error("Method not implemented.");
-//   }
-// }
+    const suggestionService = await SuggestionService.getInstance();
+
+    const suggestion = await suggestionService.findByMessageId(
+      interaction.targetMessage.id
+    );
+
+    if (!suggestion) {
+      await interaction.reply({
+        embeds: [errorEmbed("Suggestion not found")],
+        ephemeral: true,
+      });
+      return;
+    }
+
+    await interaction.reply({
+      embeds: [successEmbed("Suggestion implemented")],
+      ephemeral: true,
+    });
+  },
+});

@@ -1,34 +1,32 @@
-// import { SlashCommandBuilder } from "discord.js";
+import { ApplicationCommandType } from "discord.js";
 
-// import {
-//   BaseSuggestionResponseCommand,
-//   SuggestionReplyContext,
-// } from "./base/response.command";
+import { defineContextMenuCommand } from "../core";
+import { SuggestionService } from "../services";
+import { errorEmbed } from "../utils";
 
-// export default class DenyCommand extends BaseSuggestionResponseCommand {
-//   constructor() {
-//     super("deny");
-//   }
+import DenySuggestionModal from "../modals/deny-suggestion.modal";
 
-//   public configure(builder: SlashCommandBuilder) {
-//     return builder
-//       .setDescription("Denies a suggestion")
-//       .addNumberOption((option) =>
-//         option
-//           .setName("id")
-//           .setDescription("The ID of the suggestion")
-//           .setRequired(true)
-//           .setAutocomplete(true)
-//       )
-//       .addStringOption((option) =>
-//         option
-//           .setName("reason")
-//           .setDescription("Reason for denial")
-//           .setRequired(true)
-//       );
-//   }
+export default defineContextMenuCommand({
+  name: "Deny suggestion",
+  type: ApplicationCommandType.Message,
 
-//   protected handleReply(ctx: SuggestionReplyContext): Promise<void> {
-//     throw new Error("Method not implemented.");
-//   }
-// }
+  async execute(interaction) {
+    if (!interaction.isMessageContextMenuCommand()) return;
+
+    const suggestionService = await SuggestionService.getInstance();
+
+    const suggestion = await suggestionService.findByMessageId(
+      interaction.targetMessage.id
+    );
+
+    if (!suggestion) {
+      await interaction.reply({
+        embeds: [errorEmbed("Suggestion not found")],
+        ephemeral: true,
+      });
+      return;
+    }
+
+    await DenySuggestionModal.show(interaction, suggestion.id);
+  },
+});

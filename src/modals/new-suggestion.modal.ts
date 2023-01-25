@@ -3,14 +3,12 @@ import {
   TextInputStyle,
   ActionRowBuilder,
   ModalActionRowComponentBuilder,
-  ButtonBuilder,
-  ButtonStyle,
   EmbedBuilder,
   Colors,
 } from "discord.js";
 
 import { defineModal } from "../core";
-import { GuildConfigService, SuggestionEntityService } from "../services";
+import { SuggestionService } from "../services";
 
 export default defineModal({
   prefix: "suggestionModal",
@@ -43,62 +41,24 @@ export default defineModal({
   async handle(interaction) {
     if (!interaction.inGuild()) return;
 
-    const suggestionService = await SuggestionEntityService.getInstance();
-    const guildConfigService = await GuildConfigService.getInstance();
+    const suggestionService = await SuggestionService.getInstance();
 
-    interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ ephemeral: true });
 
-    const suggestionsChannel =
-      await guildConfigService.getGuildSuggestionsChannel(interaction.guildId);
-
-    const suggestion = await suggestionService.create({
-      channelId: suggestionsChannel.id,
+    const { message } = await suggestionService.create({
       authorId: interaction.user.id,
       title: interaction.fields.getTextInputValue("titleInput"),
       message: interaction.fields.getTextInputValue("descriptionInput"),
     });
 
-    const suggestionEmbed = await suggestionService.createSuggestionEmbed(
-      suggestion
-    );
-
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setCustomId(`upvoteSuggestion#${suggestion.id}`)
-        .setLabel("Upvote")
-        .setStyle(ButtonStyle.Success)
-        .setEmoji("⏫"),
-      new ButtonBuilder()
-        .setCustomId(`downvoteSuggestion#${suggestion.id}`)
-        .setLabel("Downvote")
-        .setStyle(ButtonStyle.Danger)
-        .setEmoji("⏬")
-    );
-
-    const message = await suggestionsChannel.send({
-      embeds: [suggestionEmbed],
-      components: [row],
-    });
-
-    const thread = await message.startThread({
-      name: `Suggestion ${suggestion.id}`,
-      autoArchiveDuration: 10080,
-      reason: `Created for suggestion ${suggestion.id}`,
-      rateLimitPerUser: 5,
-    });
-
-    await suggestionService.updateMessageAndThreadIds(
-      suggestion.id,
-      message.id,
-      thread.id
-    );
-
-    interaction.editReply({
+    await interaction.editReply({
       embeds: [
         new EmbedBuilder()
           .setColor(Colors.Green)
           .setTitle("Suggestion was created")
-          .setDescription(`[Click here to view the event](${message.url})`),
+          .setDescription(
+            `[Click here to view the suggestion](${message.url})`
+          ),
       ],
     });
   },

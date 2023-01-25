@@ -21,3 +21,10 @@ export const getDatabaseUsername = () => getEnvVariable("DB_USERNAME");
 export const getDatabasePassword = () => getEnvVariable("DB_PASSWORD");
 
 export const getHeraEndpoint = () => getEnvVariable("HERA_ENDPOINT");
+
+export const getSuggestionChannelId = () =>
+  getEnvVariable("SUGGESTION_CHANNEL_ID");
+export const getSuggestionResultChannelId = () =>
+  getEnvVariable("SUGGESTION_RESULT_CHANNEL_ID");
+export const getManagementRoleId = () => getEnvVariable("MANAGEMENT_ROLE_ID");
+export const getSupportRoleId = () => getEnvVariable("SUPPORT_ROLE_ID");
