@@ -1,33 +1,62 @@
-import { ButtonInteraction } from "discord.js";
+import { ButtonBuilder, ButtonInteraction, ButtonStyle } from "discord.js";
+
+export interface ButtonDefinition<Args extends any[] = []> {
+  label: string;
+  emoji?: string;
+  style?: ButtonStyle;
+  prefix: string;
+  handle: (interaction: ButtonInteraction, ...args: Args) => Promise<void>;
+}
 
 export interface ButtonHandler {
   prefix: string;
   handle(interaction: ButtonInteraction): Promise<void>;
 }
 
-export const getCommandArguments = (customId: string) => {
+export interface Button<Args extends any[] = []> extends ButtonHandler {
+  create(...args: Args): ButtonBuilder;
+}
+
+export const getCommandArguments = <Args extends string[]>(
+  customId: string
+) => {
   const args = customId.split("#");
   args.shift(); // Remove prefix
-  return args;
+  return args as Args;
 };
 
-export const createButtonHandler = (
-  prefix: string,
-  handle: (interaction: ButtonInteraction, args: string[]) => Promise<void>
-): ButtonHandler => {
-  if (prefix.includes("#")) {
+export const defineButton = <Args extends any[] = []>(
+  definition: ButtonDefinition<Args>
+): Button => {
+  if (definition.prefix.includes("#")) {
     throw new Error("Prefix is not allowed to contain a #");
   }
 
   return {
-    prefix,
+    prefix: definition.prefix,
+    create: (...args: Args) => {
+      const customId = [definition.prefix, ...(args || [])].join("#");
+      const button = new ButtonBuilder()
+        .setCustomId(customId)
+        .setLabel(definition.label)
+        .setStyle(definition.style || ButtonStyle.Primary);
+
+      if (definition.emoji) {
+        button.setEmoji(definition.emoji);
+      }
+
+      return button;
+    },
     handle: async (interaction: ButtonInteraction) => {
-      const args = getCommandArguments(interaction.customId);
+      const args = getCommandArguments<Args>(interaction.customId);
 
       try {
-        await handle(interaction, args);
+        await definition.handle(interaction, ...args);
       } catch (err) {
-        console.error(`[ButtonHandler] [${prefix}] An error has occurred`, err);
+        console.error(
+          `[ButtonHandler] [${definition.prefix}] An error has occurred`,
+          err
+        );
         if (interaction.deferred) {
           await interaction.editReply({ content: "An error has occurred" });
         } else {

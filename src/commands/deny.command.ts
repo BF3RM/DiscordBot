@@ -1,11 +1,12 @@
-import { ApplicationCommandType } from "discord.js";
+import { ApplicationCommandType, GuildMember } from "discord.js";
 
 import { defineContextMenuCommand } from "../core";
 import { SuggestionService } from "../services";
-import { errorEmbed } from "../utils";
+import { interactionMemberHasRole, errorEmbed } from "../utils";
 
-import DenySuggestionModal from "../modals/deny-suggestion.modal";
+import { DenySuggestionModal } from "../modals";
 import { SuggestionStatus } from "../entities";
+import { getManagementRoleId } from "../config";
 
 export default defineContextMenuCommand({
   name: "Deny suggestion",
@@ -13,6 +14,16 @@ export default defineContextMenuCommand({
 
   async execute(interaction) {
     if (!interaction.isMessageContextMenuCommand()) return;
+
+    if (!interactionMemberHasRole(interaction, getManagementRoleId())) {
+      await interaction.reply({
+        embeds: [
+          errorEmbed("You don't have permission to approve suggestions!"),
+        ],
+        ephemeral: true,
+      });
+      return;
+    }
 
     const suggestionService = await SuggestionService.getInstance();
 

@@ -1,4 +1,4 @@
-import { Bot } from "./core";
+import { Bot } from "./bot";
 
 const bot = new Bot();
 

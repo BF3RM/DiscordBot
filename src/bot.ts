@@ -8,36 +8,39 @@ import {
   REST,
   Routes,
 } from "discord.js";
-import { getBotToken } from "../config";
-import { runMigrations } from "../services";
-
-import { ButtonHandler } from "./button";
-import { getClientInstance } from "./client";
-import { Command } from "./command";
-import { loadCommands, loadButtonHandlers, loadModalHandlers } from "./loaders";
-import { ModalHandler } from "./modal";
+import { getBotToken } from "./config";
+import {
+  Command,
+  ButtonHandler,
+  ModalHandler,
+  getClientInstance,
+  loadButtonHandlers,
+  loadCommands,
+  loadModalHandlers,
+} from "./core";
+import { runMigrations } from "./services";
 
 export class Bot {
   private client: Client;
-  private commands: Collection<string, Command>;
-  private buttonHandlers: Collection<string, ButtonHandler>;
-  private modalHandlers: Collection<string, ModalHandler>;
+  private commands = new Collection<string, Command>();
+  private buttonHandlers = new Collection<string, ButtonHandler>();
+  private modalHandlers = new Collection<string, ModalHandler>();
 
   constructor() {
     this.client = getClientInstance();
-
-    this.commands = loadCommands();
-    console.log(`[Bot] Loaded ${this.commands.size} commands`);
-
-    this.buttonHandlers = loadButtonHandlers();
-    console.log(`[Bot] Loaded ${this.buttonHandlers.size} button handlers`);
-
-    this.modalHandlers = loadModalHandlers();
-    console.log(`[Bot] Loaded ${this.modalHandlers.size} modal handlers`);
   }
 
   public async start() {
     console.log("[Bot] Starting...");
+
+    loadCommands(this.commands);
+    console.log(`[Bot] Loaded ${this.commands.size} commands`);
+
+    loadButtonHandlers(this.buttonHandlers);
+    console.log(`[Bot] Loaded ${this.buttonHandlers.size} button handlers`);
+
+    loadModalHandlers(this.modalHandlers);
+    console.log(`[Bot] Loaded ${this.modalHandlers.size} modal handlers`);
 
     await runMigrations();
 

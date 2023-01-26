@@ -1,4 +1,10 @@
-import { Client, EmbedBuilder, TextChannel } from "discord.js";
+import {
+  BaseInteraction,
+  Client,
+  EmbedBuilder,
+  GuildMember,
+  TextChannel,
+} from "discord.js";
 
 export const getSafeNumber = (val: string): number | undefined => {
   const number = +val;
@@ -26,6 +32,19 @@ export const fetchTextChannel = async (client: Client, messageId: string) => {
   }
 
   return channel;
+};
+
+export const interactionMemberHasRole = (
+  interaction: BaseInteraction,
+  roleId: string
+) => {
+  if (!interaction.member) return false;
+
+  if (interaction.member instanceof GuildMember) {
+    return interaction.member.roles.cache.has(roleId);
+  }
+
+  return interaction.member.roles.includes(roleId);
 };
 
 export const createDefaultEmbed = () =>

@@ -1,6 +1,6 @@
-import { Colors, EmbedBuilder } from "discord.js";
+import { ButtonStyle, Colors, EmbedBuilder } from "discord.js";
 
-import { createButtonHandler } from "../core/button";
+import { defineButton } from "../core";
 import {
   UserAlreadyVotedError,
   SuggestionService,
@@ -8,9 +8,13 @@ import {
 } from "../services";
 import { errorEmbed } from "../utils";
 
-export default createButtonHandler(
-  "downvoteSuggestion",
-  async (interaction) => {
+export default defineButton({
+  prefix: "downvoteSuggestion",
+  label: "Downvote",
+  emoji: "⏬",
+  style: ButtonStyle.Danger,
+
+  async handle(interaction) {
     const suggestionService = await SuggestionService.getInstance();
 
     try {
@@ -44,5 +48,5 @@ export default createButtonHandler(
         });
       }
     }
-  }
-);
+  },
+});

@@ -2,10 +2,11 @@ import { ApplicationCommandType } from "discord.js";
 
 import { defineContextMenuCommand } from "../core";
 import { SuggestionService } from "../services";
-import { errorEmbed } from "../utils";
+import { errorEmbed, interactionMemberHasRole } from "../utils";
 
-import ApproveSuggestionModal from "../modals/approve-suggestion.modal";
+import { ApproveSuggestionModal } from "../modals";
 import { SuggestionStatus } from "../entities";
+import { getManagementRoleId } from "../config";
 
 export default defineContextMenuCommand({
   name: "Approve suggestion",
@@ -13,6 +14,14 @@ export default defineContextMenuCommand({
 
   async execute(interaction) {
     if (!interaction.isMessageContextMenuCommand()) return;
+
+    if (!interactionMemberHasRole(interaction, getManagementRoleId())) {
+      await interaction.reply({
+        embeds: [errorEmbed("You don't have permission to deny suggestions!")],
+        ephemeral: true,
+      });
+      return;
+    }
 
     const suggestionService = await SuggestionService.getInstance();
 

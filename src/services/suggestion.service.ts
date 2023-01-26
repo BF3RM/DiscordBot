@@ -2,7 +2,6 @@ import {
   ActionRowBuilder,
   bold,
   ButtonBuilder,
-  ButtonStyle,
   Client,
   Colors,
   EmbedBuilder,
@@ -10,10 +9,17 @@ import {
   ThreadChannel,
   User,
 } from "discord.js";
+
+import {
+  DownvoteSuggestionButton,
+  EditSuggestionButton,
+  UpvoteSuggestionButton,
+} from "../buttons";
 import { getSuggestionChannelId } from "../config";
 import { getClientInstance } from "../core";
 import { SuggestionEntity, SuggestionStatus } from "../entities";
 import { fetchChannelMessage, fetchTextChannel } from "../utils";
+
 import { BaseEntityService } from "./entity.service";
 
 export class UserAlreadyVotedError extends Error {
@@ -44,6 +50,16 @@ export interface CreateSuggestionOutput {
   suggestion: SuggestionEntity;
   message: Message;
   thread: ThreadChannel;
+}
+
+export interface UpdateSuggestionInput {
+  title: string;
+  description: string;
+}
+
+export interface UpdateSuggestionOutput {
+  suggestion: SuggestionEntity;
+  message: Message;
 }
 
 export class SuggestionService {
@@ -115,6 +131,42 @@ export class SuggestionService {
       suggestion,
       message,
       thread,
+    };
+  }
+
+  public async update(
+    suggestionId: number,
+    update: UpdateSuggestionInput
+  ): Promise<UpdateSuggestionOutput> {
+    const suggestion = await this.findById(suggestionId);
+    if (!suggestion) {
+      throw new SuggestionNotFoundError();
+    }
+
+    const originalMessage = await fetchChannelMessage(
+      this.client,
+      suggestion.channelId,
+      suggestion.messageId!
+    );
+    if (!originalMessage) {
+      throw new SuggestionNotFoundError();
+    }
+
+    const updatedSuggestion = await this.entityService.update(suggestion.id, {
+      title: update.title,
+      description: update.description,
+    });
+
+    const suggestionEmbed = await this.createSuggestionEmbed(updatedSuggestion);
+
+    await originalMessage.edit({
+      embeds: [suggestionEmbed],
+      components: [this.createActionRow(false)],
+    });
+
+    return {
+      suggestion: updatedSuggestion,
+      message: originalMessage,
     };
   }
 
@@ -292,23 +344,9 @@ export class SuggestionService {
 
   public createActionRow(disabled = false) {
     return new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setCustomId(`upvoteSuggestion`)
-        .setLabel("Upvote")
-        .setStyle(ButtonStyle.Success)
-        .setEmoji("⏫")
-        .setDisabled(disabled),
-      new ButtonBuilder()
-        .setCustomId(`downvoteSuggestion`)
-        .setLabel("Downvote")
-        .setStyle(ButtonStyle.Danger)
-        .setEmoji("⏬")
-        .setDisabled(disabled),
-      new ButtonBuilder()
-        .setCustomId(`editSuggestion`)
-        .setLabel("Edit")
-        .setStyle(ButtonStyle.Primary)
-        .setDisabled(disabled)
+      UpvoteSuggestionButton.create().setDisabled(disabled),
+      DownvoteSuggestionButton.create().setDisabled(disabled),
+      EditSuggestionButton.create().setDisabled(disabled)
     );
   }
 

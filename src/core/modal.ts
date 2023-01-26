@@ -19,7 +19,10 @@ export interface Modal<Args extends any[] = []> extends ModalHandler {
 
 export interface ModalDefinition<Args extends any[] = []> {
   prefix: string;
-  build(builder: ModalBuilder, ...args: Args): ModalBuilder;
+  build(
+    builder: ModalBuilder,
+    ...args: Args
+  ): ModalBuilder | Promise<ModalBuilder>;
   handle(interaction: ModalSubmitInteraction, ...args: Args): Promise<void>;
 }
 
@@ -30,12 +33,6 @@ export const getModalArguments = <Args extends string[]>(
   args.shift(); // Remove prefix
   return args as Args;
 };
-
-// export const defineModal = <Args extends string[] = []>(
-//   prefix: string,
-//   build: (builder: ModalBuilder, ...args: Args) => ModalBuilder,
-//   handle: (interaction: ModalSubmitInteraction, ...args: Args) => Promise<void>
-// ): Modal<Args> => {
 
 export const defineModal = <Args extends any[] = []>(
   definition: ModalDefinition<Args>
@@ -71,7 +68,7 @@ export const defineModal = <Args extends any[] = []>(
       ...args: Args
     ) => {
       const customId = [definition.prefix, ...(args || [])].join("#");
-      const modal = definition.build(
+      const modal = await definition.build(
         new ModalBuilder().setCustomId(customId),
         ...args
       );
