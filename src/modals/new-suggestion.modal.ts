@@ -48,7 +48,7 @@ export default defineModal({
     const { message } = await suggestionService.create({
       authorId: interaction.user.id,
       title: interaction.fields.getTextInputValue("titleInput"),
-      message: interaction.fields.getTextInputValue("descriptionInput"),
+      description: interaction.fields.getTextInputValue("descriptionInput"),
     });
 
     await interaction.editReply({

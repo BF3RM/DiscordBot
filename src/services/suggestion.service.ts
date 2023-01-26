@@ -43,7 +43,7 @@ export class SuggestionAlreadyRepliedError extends Error {
 export interface CreateSuggestionInput {
   authorId: string;
   title: string;
-  message: string;
+  description: string;
 }
 
 export interface CreateSuggestionOutput {
@@ -102,7 +102,7 @@ export class SuggestionService {
       suggestedBy: input.authorId,
       status: SuggestionStatus.PENDING,
       title: input.title,
-      description: input.message,
+      description: input.description,
       upvotes: [],
       downvotes: [],
     });
@@ -196,12 +196,7 @@ export class SuggestionService {
       upvotes: suggestion.upvotes,
     });
 
-    const suggestionEmbed = EmbedBuilder.from(message.embeds[0]);
-
-    suggestionEmbed.setFields({
-      name: "Votes",
-      value: this.generateVotesText(updatedSuggestion),
-    });
+    const suggestionEmbed = await this.createSuggestionEmbed(suggestion, true);
 
     await message.edit({ embeds: [suggestionEmbed] });
 
@@ -297,7 +292,10 @@ export class SuggestionService {
       suggestion
     );
 
-    const suggestionEmbed = await this.createSuggestionEmbed(updatedSuggestion);
+    const suggestionEmbed = await this.createSuggestionEmbed(
+      updatedSuggestion,
+      true
+    );
 
     await originalMessage.edit({
       embeds: [suggestionEmbed],
@@ -363,7 +361,10 @@ export class SuggestionService {
     }
   }
 
-  public async createSuggestionEmbed(suggestion: SuggestionEntity) {
+  public async createSuggestionEmbed(
+    suggestion: SuggestionEntity,
+    withTimestamp = false
+  ) {
     const user = await this.client.users.fetch(suggestion.suggestedBy);
     if (!user) {
       throw new Error("Failed to find user");
@@ -412,7 +413,9 @@ export class SuggestionService {
       );
     }
 
-    // TODO: Implemented status
+    if (withTimestamp) {
+      embed.setFooter({ text: "Last updated" }).setTimestamp();
+    }
 
     return embed;
   }

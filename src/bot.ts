@@ -141,3 +141,11 @@ export class Bot {
     }
   }
 }
+
+process.on("uncaughtException", (err) => {
+  console.error("[Exception]", err);
+});
+
+process.on("unhandledRejection", (err) => {
+  console.error("[PromiseRejection]", err);
+});
