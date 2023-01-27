@@ -37,7 +37,7 @@ export default defineButton({
     } catch (err) {
       if (err instanceof SuggestionNotFoundError) {
         await interaction.reply({
-          embeds: [errorEmbed("Failed to find original suggestion")],
+          embeds: [errorEmbed("Failed to find suggestion")],
           ephemeral: true,
         });
       }

@@ -31,7 +31,7 @@ export default defineContextMenuCommand({
 
     if (!suggestion) {
       await interaction.reply({
-        embeds: [errorEmbed("Suggestion not found")],
+        embeds: [errorEmbed("Failed to find suggestion")],
         ephemeral: true,
       });
       return;
