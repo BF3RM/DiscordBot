@@ -28,3 +28,8 @@ export const getSuggestionResultChannelId = () =>
   getEnvVariable("SUGGESTION_RESULT_CHANNEL_ID");
 export const getManagementRoleId = () => getEnvVariable("MANAGEMENT_ROLE_ID");
 export const getSupportRoleId = () => getEnvVariable("SUPPORT_ROLE_ID");
+
+export const getServerListChannelId = () =>
+  getEnvVariable("SERVER_LIST_CHANNEL_ID");
+export const getServerListScheduleRule = () =>
+  getEnvVariable("SERVER_LIST_SCHEDULE_RULE", "*/5 * * * *");

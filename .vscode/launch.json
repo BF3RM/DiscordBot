@@ -8,6 +8,7 @@
             "program": "${workspaceFolder}/src/index.ts",
             "runtimeArgs": ["-r", "dotenv/config"],
             "preLaunchTask": "tsc: build - tsconfig.json",
+            "outputCapture": "std",
             "outFiles": [
                 "${workspaceFolder}/dist/**/*.js"
             ]

@@ -8,7 +8,7 @@ import {
   REST,
   Routes,
 } from "discord.js";
-import { getBotToken } from "./config";
+import { getBotToken, getServerListScheduleRule } from "./config";
 import {
   Command,
   ButtonHandler,
@@ -18,7 +18,11 @@ import {
   loadCommands,
   loadModalHandlers,
 } from "./core";
-import { runMigrations } from "./services";
+import { LoggerFactory } from "./logger.factory";
+import { runMigrations, SchedulerService } from "./services";
+import { ServerListJob } from "./tasks";
+
+const logger = LoggerFactory.getLogger("Bot");
 
 export class Bot {
   private client: Client;
@@ -31,16 +35,16 @@ export class Bot {
   }
 
   public async start() {
-    console.log("[Bot] Starting...");
+    logger.info("Starting...");
 
     loadCommands(this.commands);
-    console.log(`[Bot] Loaded ${this.commands.size} commands`);
+    logger.info(`Loaded ${this.commands.size} commands`);
 
     loadButtonHandlers(this.buttonHandlers);
-    console.log(`[Bot] Loaded ${this.buttonHandlers.size} button handlers`);
+    logger.info(`Loaded ${this.buttonHandlers.size} button handlers`);
 
     loadModalHandlers(this.modalHandlers);
-    console.log(`[Bot] Loaded ${this.modalHandlers.size} modal handlers`);
+    logger.info(`Loaded ${this.modalHandlers.size} modal handlers`);
 
     await runMigrations();
 
@@ -52,28 +56,32 @@ export class Bot {
   }
 
   private async onReady() {
-    console.log(`[Bot] We are ready!`);
+    logger.info(`We are ready!`);
     await this.registerCommands();
     await this.client.user?.setActivity("Dreaming about working code", {
       type: ActivityType.Playing,
     });
+    this.scheduleJobs();
   }
 
   private async onGuildCreate(guild: Guild) {
     await this.registerGuildCommands(guild.id);
-    console.log(`[Bot] Joined ${guild.name} and registered commands`);
+    logger.info(`Joined ${guild.name} and registered commands`);
   }
 
   private async onInteractionCreate(interaction: Interaction) {
     if (interaction.isButton()) {
       const prefix = interaction.customId.split("#").shift();
       if (!prefix) {
-        console.error("[Bot] Received button interaction without custom id");
+        logger.error("Received button interaction without custom id");
         return;
       }
 
       const handler = this.buttonHandlers.get(prefix);
-      if (!handler) return;
+      if (!handler) {
+        logger.warn({ prefix }, "No button handler for prefix");
+        return;
+      }
       await handler.handle(interaction);
       return;
     }
@@ -81,35 +89,45 @@ export class Bot {
     if (interaction.isModalSubmit()) {
       const prefix = interaction.customId.split("#").shift();
       if (!prefix) {
-        console.error(
-          "[Bot] Received modal submit interaction without custom id"
-        );
+        logger.error("Received modal submit interaction without custom id");
         return;
       }
 
       const handler = this.modalHandlers.get(prefix);
-      if (!handler) return;
+      if (!handler) {
+        logger.warn({ prefix }, "No modal handler for prefix");
+        return;
+      }
       await handler.handle(interaction);
       return;
     }
 
     if (interaction.isCommand() || interaction.isAutocomplete()) {
       const command = this.commands.get(interaction.commandName);
-      if (!command) return;
+      if (!command) {
+        logger.warn(
+          { commandName: interaction.commandName },
+          "Unknown command interaction"
+        );
+        return;
+      }
 
       if (interaction.isCommand()) {
         await command.onCommand(interaction);
       } else {
         await command.onAutocomplete(interaction);
       }
+      return;
     }
+
+    logger.warn({ interaction }, "Received unknown interaction");
   }
 
   private async registerCommands() {
     for (const guild of this.client.guilds.cache.values()) {
       await this.registerGuildCommands(guild.id);
     }
-    console.log(`[Bot] Registered slash commands on all known guilds`);
+    logger.info(`Registered slash commands on all known guilds`);
   }
 
   private async registerGuildCommands(guildId: string) {
@@ -140,12 +158,20 @@ export class Bot {
       throw error;
     }
   }
+
+  private scheduleJobs() {
+    SchedulerService.schedule(
+      "ServerList",
+      getServerListScheduleRule(),
+      new ServerListJob()
+    );
+  }
 }
 
 process.on("uncaughtException", (err) => {
-  console.error("[Exception]", err);
+  logger.error(err);
 });
 
 process.on("unhandledRejection", (err) => {
-  console.error("[PromiseRejection]", err);
+  logger.error(err);
 });

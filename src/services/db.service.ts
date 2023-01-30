@@ -1,6 +1,6 @@
 import "reflect-metadata";
 
-import { DataSource } from "typeorm";
+import { DataSource, Logger, QueryRunner } from "typeorm";
 import {
   getDatabaseHost,
   getDatabasePort,
@@ -12,6 +12,9 @@ import {
 import { SuggestionEntity } from "../entities";
 
 import migrationChangeSets from "../migrations/change-sets";
+import { LoggerFactory } from "../logger.factory";
+
+const logger = LoggerFactory.getLogger("DB");
 
 let dataSource: DataSource | undefined;
 
@@ -28,6 +31,7 @@ export const getDatabaseDataSource = () => {
       migrations: [...migrationChangeSets],
       migrationsRun: false,
       synchronize: false,
+      logger: new TypeORMLogger(),
     });
   }
 
@@ -38,7 +42,7 @@ export const getDatabaseConnection = async (): Promise<DataSource> => {
   dataSource = getDatabaseDataSource();
 
   if (!dataSource.isInitialized) {
-    console.log("[Database] Initializing...");
+    logger.info("Initializing...");
     dataSource = await dataSource.initialize();
   }
 
@@ -47,6 +51,64 @@ export const getDatabaseConnection = async (): Promise<DataSource> => {
 
 export const runMigrations = async () => {
   const dataSource = await getDatabaseConnection();
-  console.log("[Database] Running migrations...");
+  logger.info("Running migrations...");
   return dataSource.runMigrations();
 };
+
+export class TypeORMLogger implements Logger {
+  logQuery(
+    query: string,
+    parameters?: any[] | undefined,
+    queryRunner?: QueryRunner | undefined
+  ) {
+    logger.debug({ query, parameters }, "query");
+  }
+
+  logQueryError(
+    error: string | Error,
+    query: string,
+    parameters?: any[] | undefined,
+    queryRunner?: QueryRunner | undefined
+  ) {
+    logger.error({ query, parameters }, "query failed: %o", error);
+  }
+
+  logQuerySlow(
+    time: number,
+    query: string,
+    parameters?: any[] | undefined,
+    queryRunner?: QueryRunner | undefined
+  ) {
+    logger.warn(
+      { query, parameters },
+      "query is slow, excecution time: %d",
+      time
+    );
+  }
+
+  logSchemaBuild(message: string, queryRunner?: QueryRunner | undefined) {
+    logger.info(message);
+  }
+
+  logMigration(message: string, queryRunner?: QueryRunner | undefined) {
+    logger.info(message);
+  }
+
+  log(
+    level: "warn" | "info" | "log",
+    message: any,
+    queryRunner?: QueryRunner | undefined
+  ) {
+    switch (level) {
+      case "log":
+        logger.trace(message);
+        break;
+      case "info":
+        logger.info(message);
+        break;
+      case "warn":
+        logger.warn(message);
+        break;
+    }
+  }
+}

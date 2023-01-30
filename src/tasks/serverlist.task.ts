@@ -1,4 +1,4 @@
-import { Colors } from "discord.js";
+import { Colors, Message } from "discord.js";
 
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
@@ -6,9 +6,13 @@ import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(duration);
 dayjs.extend(relativeTime);
 
-import { defineCommand } from "../core";
-import { HeraServerInfo, HeraService } from "../services";
-import { createDefaultEmbed, errorEmbed } from "../utils";
+import { HeraServerInfo, HeraService, ScheduleJob } from "../services";
+import { createDefaultEmbed, fetchTextChannel } from "../utils";
+import { getServerListChannelId } from "../config";
+import { getClientInstance } from "../core";
+import { LoggerFactory } from "../logger.factory";
+
+const logger = LoggerFactory.getLogger("ServerListJob");
 
 function createServerEmbed(server: HeraServerInfo) {
   const now = dayjs();
@@ -18,8 +22,7 @@ function createServerEmbed(server: HeraServerInfo) {
   return createDefaultEmbed()
     .setColor(Colors.Green)
     .setTitle(server.name)
-    .setTimestamp(new Date(server.lastOnline))
-    .setFooter({ text: "Last update" })
+    .setFooter({ text: "Last updated" })
     .setImage(
       `https://s3.bf3reality.com/assets/loadingscreens/${server.roundLevelName.toLowerCase()}.png`
     )
@@ -41,39 +44,36 @@ function createServerEmbed(server: HeraServerInfo) {
     );
 }
 
-export default defineCommand({
-  name: "serverlist",
-  configure: (builder) =>
-    builder
-      .setDescription("Receive server info of Reality Mod servers")
-      .addStringOption((option) =>
-        option.setName("name").setDescription("Server name")
-      ),
+export class ServerListJob implements ScheduleJob {
+  private message: Message | null = null;
 
-  async execute(interaction) {
+  async execute() {
     const heraService = HeraService.getInstance();
-
-    await interaction.deferReply();
 
     const servers = await heraService.getServers();
 
     if (!servers.length) {
-      await interaction.editReply({
-        embeds: [errorEmbed("No servers found.")],
-      });
+      logger.warn("No servers where found");
       return;
     }
 
-    const amountOfServers = servers.length;
     // Sort servers by player count and make sure we only display 5
     servers.sort((a, b) => a.roundPlayers - b.roundPlayers);
-    servers.length = Math.min(servers.length, 5);
+    // servers.length = Math.min(servers.length, 5);
 
     const embeds = servers.map(createServerEmbed);
 
-    await interaction.editReply({
-      embeds: embeds,
-      content: `Found ${amountOfServers} servers, displaying top ${servers.length} by players.`,
-    });
-  },
-});
+    if (this.message) {
+      await this.message.edit({ embeds });
+    } else {
+      const serverChannel = await fetchTextChannel(
+        getClientInstance(),
+        getServerListChannelId()
+      );
+
+      this.message = await serverChannel.send({ embeds });
+    }
+
+    logger.debug("Updated server list");
+  }
+}
