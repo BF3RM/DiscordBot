@@ -1,5 +1,6 @@
-import { Entity, Column } from "typeorm";
+import { Entity, Column, OneToMany } from "typeorm";
 import { BaseEntity } from "./base.entity";
+import { SuggestionVoteEntity } from "./suggestion-vote.entity";
 
 export enum SuggestionStatus {
   PENDING = "PENDING",
@@ -46,11 +47,10 @@ export class SuggestionEntity extends BaseEntity {
   @Column({ nullable: true })
   implementedBy?: string;
 
-  @Column("text", { array: true })
-  upvotes!: string[];
-
-  @Column("text", { array: true })
-  downvotes!: string[];
+  @OneToMany(() => SuggestionVoteEntity, (vote) => vote.suggestion, {
+    cascade: true,
+  })
+  votes!: SuggestionVoteEntity[];
 }
 
 export const getSuggestionTitle = (suggestion: SuggestionEntity) =>

@@ -1,12 +1,16 @@
 import { ButtonStyle, Colors, EmbedBuilder } from "discord.js";
 
 import { defineButton } from "../core";
+import { LoggerFactory } from "../logger.factory";
 import {
   UserAlreadyVotedError,
   SuggestionService,
   SuggestionNotFoundError,
+  OwnSuggestionVoteError,
 } from "../services";
 import { errorEmbed } from "../utils";
+
+const logger = LoggerFactory.getLogger("UpvoteSuggestionHandler");
 
 export default defineButton({
   prefix: "downvoteSuggestion",
@@ -40,12 +44,18 @@ export default defineButton({
           embeds: [errorEmbed("Failed to find suggestion")],
           ephemeral: true,
         });
-      }
-      if (err instanceof UserAlreadyVotedError) {
+      } else if (err instanceof UserAlreadyVotedError) {
         await interaction.reply({
           embeds: [errorEmbed(`You have already downvoted this suggestion`)],
           ephemeral: true,
         });
+      } else if (err instanceof OwnSuggestionVoteError) {
+        await interaction.reply({
+          embeds: [errorEmbed(`You can not vote on your own suggestion`)],
+          ephemeral: true,
+        });
+      } else {
+        logger.error(err);
       }
     }
   },

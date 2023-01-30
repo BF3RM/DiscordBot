@@ -9,7 +9,7 @@ import {
   getDatabaseName,
 } from "../config";
 
-import { SuggestionEntity } from "../entities";
+import { SuggestionEntity, SuggestionVoteEntity } from "../entities";
 
 import migrationChangeSets from "../migrations/change-sets";
 import { LoggerFactory } from "../logger.factory";
@@ -27,7 +27,7 @@ export const getDatabaseDataSource = () => {
       username: getDatabaseUsername(),
       password: getDatabasePassword(),
       database: getDatabaseName(),
-      entities: [SuggestionEntity],
+      entities: [SuggestionEntity, SuggestionVoteEntity],
       migrations: [...migrationChangeSets],
       migrationsRun: false,
       synchronize: false,

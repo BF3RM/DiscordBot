@@ -17,7 +17,12 @@ import {
 } from "../buttons";
 import { getSuggestionChannelId } from "../config";
 import { getClientInstance } from "../core";
-import { SuggestionEntity, SuggestionStatus } from "../entities";
+import {
+  SuggestionEntity,
+  SuggestionStatus,
+  SuggestionVoteEntity,
+  SuggestionVoteType,
+} from "../entities";
 import { fetchChannelMessage, fetchTextChannel } from "../utils";
 
 import { BaseEntityService } from "./entity.service";
@@ -37,6 +42,12 @@ export class SuggestionNotFoundError extends Error {
 export class SuggestionAlreadyRepliedError extends Error {
   constructor(public readonly suggestion: SuggestionEntity) {
     super(`Suggestion ${suggestion.id} was already approved or rejected`);
+  }
+}
+
+export class OwnSuggestionVoteError extends Error {
+  constructor(public readonly suggestion: SuggestionEntity) {
+    super(`You can't vote on your own suggestion`);
   }
 }
 
@@ -65,28 +76,33 @@ export interface UpdateSuggestionOutput {
 export class SuggestionService {
   constructor(
     private readonly client: Client,
-    private readonly entityService: BaseEntityService<SuggestionEntity>
+    private readonly suggestionEntityService: BaseEntityService<SuggestionEntity>
   ) {}
 
   private static instance: SuggestionService;
 
   public static async getInstance(): Promise<SuggestionService> {
     if (!this.instance) {
-      const entityService = new BaseEntityService(SuggestionEntity);
-      await entityService.init();
+      const suggestionEntityService = new BaseEntityService(SuggestionEntity, [
+        "votes",
+      ]);
+      await suggestionEntityService.init();
 
-      this.instance = new SuggestionService(getClientInstance(), entityService);
+      this.instance = new SuggestionService(
+        getClientInstance(),
+        suggestionEntityService
+      );
     }
 
     return this.instance;
   }
 
   public async findById(id: number) {
-    return this.entityService.get(id);
+    return this.suggestionEntityService.get(id);
   }
 
   public async findByMessageId(messageId: string) {
-    return this.entityService.findOne({ messageId });
+    return this.suggestionEntityService.findOne({ messageId });
   }
 
   public async create(
@@ -97,14 +113,13 @@ export class SuggestionService {
       getSuggestionChannelId()
     );
 
-    const suggestion = await this.entityService.create({
+    const suggestion = await this.suggestionEntityService.create({
       channelId: suggestionChannel.id,
       suggestedBy: input.authorId,
       status: SuggestionStatus.PENDING,
       title: input.title,
       description: input.description,
-      upvotes: [],
-      downvotes: [],
+      votes: [],
     });
 
     const suggestionEmbed = await this.createSuggestionEmbed(suggestion);
@@ -122,7 +137,7 @@ export class SuggestionService {
       rateLimitPerUser: 5,
     });
 
-    this.entityService.update(suggestion.id, {
+    this.suggestionEntityService.update(suggestion.id, {
       messageId: message.id,
       threadId: thread.id,
     });
@@ -152,10 +167,13 @@ export class SuggestionService {
       throw new SuggestionNotFoundError();
     }
 
-    const updatedSuggestion = await this.entityService.update(suggestion.id, {
-      title: update.title,
-      description: update.description,
-    });
+    const updatedSuggestion = await this.suggestionEntityService.update(
+      suggestion.id,
+      {
+        title: update.title,
+        description: update.description,
+      }
+    );
 
     const suggestionEmbed = await this.createSuggestionEmbed(updatedSuggestion);
 
@@ -174,60 +192,56 @@ export class SuggestionService {
     message: Message,
     user: User
   ): Promise<SuggestionEntity> {
-    const suggestion = await this.findByMessageId(message.id);
-    if (!suggestion) {
-      throw new SuggestionNotFoundError();
-    }
-
-    // Remove downvote if it exists
-    const voteIdx = suggestion.downvotes.indexOf(user.id);
-    if (voteIdx !== -1) {
-      suggestion.downvotes.splice(voteIdx, 1);
-    }
-
-    if (suggestion.upvotes.includes(user.id)) {
-      throw new UserAlreadyVotedError(user, "upvoted");
-    }
-
-    suggestion.upvotes.push(user.id);
-
-    const updatedSuggestion = await this.entityService.update(suggestion.id, {
-      downvotes: suggestion.downvotes,
-      upvotes: suggestion.upvotes,
-    });
-
-    const suggestionEmbed = await this.createSuggestionEmbed(suggestion, true);
-
-    await message.edit({ embeds: [suggestionEmbed] });
-
-    return updatedSuggestion;
+    return this.addUserVote(message, user, SuggestionVoteType.UPVOTE);
   }
 
   public async addUserDownvote(
     message: Message,
     user: User
   ): Promise<SuggestionEntity> {
+    return this.addUserVote(message, user, SuggestionVoteType.DOWNVOTE);
+  }
+
+  private async addUserVote(
+    message: Message,
+    user: User,
+    type: SuggestionVoteType
+  ) {
     const suggestion = await this.findByMessageId(message.id);
     if (!suggestion) {
       throw new SuggestionNotFoundError();
     }
 
-    // Remove downvote if it exists
-    const voteIdx = suggestion.upvotes.indexOf(user.id);
-    if (voteIdx !== -1) {
-      suggestion.upvotes.splice(voteIdx, 1);
+    if (suggestion.suggestedBy === user.id) {
+      throw new OwnSuggestionVoteError(suggestion);
     }
 
-    if (suggestion.downvotes.includes(user.id)) {
-      throw new UserAlreadyVotedError(user, "downvoted");
+    const existingVote = suggestion.votes.find(
+      (vote) => vote.userId === user.id
+    );
+
+    if (existingVote) {
+      if (existingVote.type === type) {
+        throw new UserAlreadyVotedError(
+          user,
+          type === SuggestionVoteType.UPVOTE ? "approved" : "denied"
+        );
+      }
+
+      existingVote.type = type;
+    } else {
+      const vote = new SuggestionVoteEntity();
+      vote.type = type;
+      vote.userId = user.id;
+      suggestion.votes.push(vote);
     }
 
-    suggestion.downvotes.push(user.id);
-
-    const updatedSuggestion = await this.entityService.update(suggestion.id, {
-      downvotes: suggestion.downvotes,
-      upvotes: suggestion.upvotes,
-    });
+    const updatedSuggestion = await this.suggestionEntityService.update(
+      suggestion.id,
+      {
+        votes: suggestion.votes,
+      }
+    );
 
     const suggestionEmbed = EmbedBuilder.from(message.embeds[0]);
 
@@ -265,7 +279,7 @@ export class SuggestionService {
     responseStatus: SuggestionStatus.APPROVED | SuggestionStatus.DENIED,
     responseReason: string
   ) {
-    const suggestion = await this.entityService.get(suggestionId);
+    const suggestion = await this.suggestionEntityService.get(suggestionId);
     if (!suggestion) {
       throw new SuggestionNotFoundError();
     }
@@ -287,7 +301,7 @@ export class SuggestionService {
     suggestion.responseBy = user.id;
     suggestion.responseReason = responseReason;
 
-    const updatedSuggestion = await this.entityService.update(
+    const updatedSuggestion = await this.suggestionEntityService.update(
       suggestion.id,
       suggestion
     );
@@ -313,8 +327,12 @@ export class SuggestionService {
   }
 
   public generateVotesText(suggestion: SuggestionEntity): string {
-    const totalUpvotes = suggestion.upvotes.length;
-    const totalDownvotes = suggestion.downvotes.length;
+    const totalUpvotes = suggestion.votes.filter(
+      (vote) => vote.type === SuggestionVoteType.UPVOTE
+    ).length;
+    const totalDownvotes = suggestion.votes.filter(
+      (vote) => vote.type === SuggestionVoteType.DOWNVOTE
+    ).length;
     const totalVotes = totalUpvotes + totalDownvotes;
 
     if (totalVotes === 0) {
