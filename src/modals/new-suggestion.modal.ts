@@ -35,7 +35,7 @@ export default defineModal({
       );
 
     return builder
-      .setTitle("New suggestion")
+      .setTitle("Create suggestion")
       .addComponents(firstRow, secondRow);
   },
   async handle(interaction) {

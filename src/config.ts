@@ -22,6 +22,8 @@ export const getDatabasePassword = () => getEnvVariable("DB_PASSWORD");
 
 export const getHeraEndpoint = () => getEnvVariable("HERA_ENDPOINT");
 
+export const getGuildId = () => getEnvVariable("GUILD_ID");
+
 export const getSuggestionChannelId = () =>
   getEnvVariable("SUGGESTION_CHANNEL_ID");
 export const getSuggestionResultChannelId = () =>
