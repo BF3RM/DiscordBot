@@ -76,7 +76,7 @@ export interface UpdateSuggestionOutput {
 export class SuggestionService {
   constructor(
     private readonly client: Client,
-    private readonly suggestionEntityService: BaseEntityService<SuggestionEntity>
+    private readonly entityService: BaseEntityService<SuggestionEntity>
   ) {}
 
   private static instance: SuggestionService;
@@ -98,11 +98,11 @@ export class SuggestionService {
   }
 
   public async findById(id: number) {
-    return this.suggestionEntityService.get(id);
+    return this.entityService.get(id);
   }
 
   public async findByMessageId(messageId: string) {
-    return this.suggestionEntityService.findOne({ messageId });
+    return this.entityService.findOne({ messageId });
   }
 
   public async create(
@@ -113,7 +113,7 @@ export class SuggestionService {
       getSuggestionChannelId()
     );
 
-    const suggestion = await this.suggestionEntityService.create({
+    const suggestion = await this.entityService.create({
       channelId: suggestionChannel.id,
       suggestedBy: input.authorId,
       status: SuggestionStatus.PENDING,
@@ -137,7 +137,7 @@ export class SuggestionService {
       rateLimitPerUser: 5,
     });
 
-    this.suggestionEntityService.update(suggestion.id, {
+    this.entityService.update(suggestion.id, {
       messageId: message.id,
       threadId: thread.id,
     });
@@ -167,13 +167,10 @@ export class SuggestionService {
       throw new SuggestionNotFoundError();
     }
 
-    const updatedSuggestion = await this.suggestionEntityService.update(
-      suggestion.id,
-      {
-        title: update.title,
-        description: update.description,
-      }
-    );
+    const updatedSuggestion = await this.entityService.update(suggestion.id, {
+      title: update.title,
+      description: update.description,
+    });
 
     const suggestionEmbed = await this.createSuggestionEmbed(updatedSuggestion);
 
@@ -236,12 +233,9 @@ export class SuggestionService {
       suggestion.votes.push(vote);
     }
 
-    const updatedSuggestion = await this.suggestionEntityService.update(
-      suggestion.id,
-      {
-        votes: suggestion.votes,
-      }
-    );
+    const updatedSuggestion = await this.entityService.update(suggestion.id, {
+      votes: suggestion.votes,
+    });
 
     const suggestionEmbed = EmbedBuilder.from(message.embeds[0]);
 
@@ -279,7 +273,7 @@ export class SuggestionService {
     responseStatus: SuggestionStatus.APPROVED | SuggestionStatus.DENIED,
     responseReason: string
   ) {
-    const suggestion = await this.suggestionEntityService.get(suggestionId);
+    const suggestion = await this.entityService.get(suggestionId);
     if (!suggestion) {
       throw new SuggestionNotFoundError();
     }
@@ -301,7 +295,7 @@ export class SuggestionService {
     suggestion.responseBy = user.id;
     suggestion.responseReason = responseReason;
 
-    const updatedSuggestion = await this.suggestionEntityService.update(
+    const updatedSuggestion = await this.entityService.update(
       suggestion.id,
       suggestion
     );

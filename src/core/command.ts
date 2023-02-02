@@ -50,10 +50,7 @@ export const defineCommand = ({
     try {
       await execute(interaction);
     } catch (err) {
-      console.error(
-        `[ContextMenuCommand] [${name}] An error has occurred`,
-        err
-      );
+      console.error(`[Command] [${name}] An error has occurred`, err);
       if (interaction.deferred) {
         await interaction.editReply({ content: "An error has occurred" });
       } else {

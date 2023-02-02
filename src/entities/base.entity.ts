@@ -3,10 +3,11 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Column,
+  PrimaryColumn,
 } from "typeorm";
 
 export abstract class BaseEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryColumn()
   id!: number;
 
   @CreateDateColumn()
