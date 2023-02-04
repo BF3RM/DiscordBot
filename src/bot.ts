@@ -32,6 +32,8 @@ export class Bot {
 
   constructor() {
     this.client = getClientInstance();
+
+    this.client.channels.cache.get('someid')
   }
 
   public async start() {
@@ -160,11 +162,15 @@ export class Bot {
   }
 
   private scheduleJobs() {
-    SchedulerService.schedule(
-      "ServerList",
-      getServerListScheduleRule(),
-      new ServerListJob()
-    );
+    const serverListScheduleRule = getServerListScheduleRule();
+
+    if (serverListScheduleRule) {
+      SchedulerService.schedule(
+        "ServerList",
+        serverListScheduleRule,
+        new ServerListJob()
+      );
+    }
   }
 }
 
