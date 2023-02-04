@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=rmbot
+      - POSTGRES_USER=rmbot
+      - POSTGRES_PASSWORD=rmbot
+    ports:
+      - 6543:5432
