@@ -8,7 +8,7 @@ import {
   REST,
   Routes,
 } from "discord.js";
-import { getBotToken, getServerListScheduleRule } from "./config";
+import { getBotToken, getServerListScheduleRule, getSundayEventScheduleRule } from "./config";
 import {
   Command,
   ButtonHandler,
@@ -20,7 +20,7 @@ import {
 } from "./core";
 import { LoggerFactory } from "./logger.factory";
 import { runMigrations, SchedulerService } from "./services";
-import { ServerListJob } from "./tasks";
+import { ServerListJob, SundayEventScheduleJob } from "./tasks";
 
 const logger = LoggerFactory.getLogger("Bot");
 
@@ -163,6 +163,7 @@ export class Bot {
 
   private scheduleJobs() {
     const serverListScheduleRule = getServerListScheduleRule();
+    const sundayEventScheduleRule = getSundayEventScheduleRule();
 
     if (serverListScheduleRule) {
       SchedulerService.schedule(
@@ -170,6 +171,14 @@ export class Bot {
         serverListScheduleRule,
         new ServerListJob()
       );
+    }
+
+    if (sundayEventScheduleRule) {
+      SchedulerService.schedule(
+        "SundayEvent",
+        sundayEventScheduleRule,
+        new SundayEventScheduleJob()
+      )
     }
   }
 }
