@@ -19,12 +19,16 @@ function createServerEmbed(server: HeraServerInfo) {
   const roundStarted = dayjs(server.roundStartedAt);
   const duration = dayjs.duration(now.diff(roundStarted)).humanize();
 
+  const levelName = server.roundLevelName.substring(
+    server.roundLevelName.lastIndexOf("/") + 1
+  );
+
   return createDefaultEmbed()
     .setColor(Colors.Green)
     .setTitle(server.name)
     .setFooter({ text: "Last updated" })
     .setImage(
-      `https://s3.bf3reality.com/assets/loadingscreens/${server.roundLevelName.toLowerCase()}.png`
+      `https://s3.bf3reality.com/assets/loadingscreens/${levelName.toLowerCase()}.png`
     )
     .setFields(
       {
@@ -37,7 +41,7 @@ function createServerEmbed(server: HeraServerInfo) {
         inline: true,
       },
       // { name: "Health", value: `${server.health} FPS`, inline: true },
-      { name: "Current Map", value: server.roundLevelName, inline: true },
+      { name: "Current Map", value: levelName, inline: true },
       { name: "Round Duration", value: duration, inline: true },
       { name: "Join", value: `<vu://join/${server.id}>` }
       // { name: "Uptime", value: `${server.activeTime}`, inline: true }
