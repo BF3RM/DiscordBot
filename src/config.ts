@@ -1,13 +1,19 @@
-export const getEnvVariable = (env: string, fallback?: string): string | undefined => {
+export const getEnvVariable = (
+  env: string,
+  fallback?: string
+): string | undefined => {
   const value = process.env[env];
   if (!value) {
     return fallback;
   }
 
   return value;
-}
+};
 
-export const getRequiredEnvVariable = (env: string, fallback?: string): string => {
+export const getRequiredEnvVariable = (
+  env: string,
+  fallback?: string
+): string => {
   const value = getEnvVariable(env, fallback);
   if (!value) {
     throw new Error(`${env} was not defined!`);
@@ -21,7 +27,8 @@ export const getRequiredEnvVariable = (env: string, fallback?: string): string =
  */
 export const getBotToken = () => getRequiredEnvVariable("TOKEN");
 
-export const getDatabaseHost = () => getRequiredEnvVariable("DB_HOST", "localhost");
+export const getDatabaseHost = () =>
+  getRequiredEnvVariable("DB_HOST", "localhost");
 export const getDatabasePort = () =>
   parseInt(getRequiredEnvVariable("DB_PORT", "5432"));
 export const getDatabaseName = () => getRequiredEnvVariable("DB_NAME");
@@ -31,12 +38,15 @@ export const getDatabasePassword = () => getRequiredEnvVariable("DB_PASSWORD");
 export const getHeraEndpoint = () => getRequiredEnvVariable("HERA_ENDPOINT");
 
 export const getGuildId = () => getRequiredEnvVariable("GUILD_ID");
+export const getGeneralChannelId = () =>
+  getRequiredEnvVariable("GENERAL_CHANNEL_ID");
 
 export const getSuggestionChannelId = () =>
   getRequiredEnvVariable("SUGGESTION_CHANNEL_ID");
 export const getSuggestionResultChannelId = () =>
   getRequiredEnvVariable("SUGGESTION_RESULT_CHANNEL_ID");
-export const getManagementRoleId = () => getRequiredEnvVariable("MANAGEMENT_ROLE_ID");
+export const getManagementRoleId = () =>
+  getRequiredEnvVariable("MANAGEMENT_ROLE_ID");
 export const getSupportRoleId = () => getRequiredEnvVariable("SUPPORT_ROLE_ID");
 
 export const getServerListChannelId = () =>

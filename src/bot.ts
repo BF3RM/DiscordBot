@@ -8,7 +8,11 @@ import {
   REST,
   Routes,
 } from "discord.js";
-import { getBotToken, getServerListScheduleRule, getSundayEventScheduleRule } from "./config";
+import {
+  getBotToken,
+  getServerListScheduleRule,
+  getSundayEventScheduleRule,
+} from "./config";
 import {
   Command,
   ButtonHandler,
@@ -33,7 +37,7 @@ export class Bot {
   constructor() {
     this.client = getClientInstance();
 
-    this.client.channels.cache.get('someid')
+    this.client.channels.cache.get("someid");
   }
 
   public async start() {
@@ -178,8 +182,10 @@ export class Bot {
         "SundayEvent",
         sundayEventScheduleRule,
         new SundayEventScheduleJob()
-      )
+      );
     }
+
+    new SundayEventScheduleJob().execute();
   }
 }
 
