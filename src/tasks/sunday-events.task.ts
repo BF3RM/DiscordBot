@@ -8,7 +8,6 @@ import {
 import {
   getCommunityEventChannelId,
   getCommunityEventRoleId,
-  getGeneralChannelId,
   getGuildId,
 } from "../config";
 import { getClientInstance } from "../core";
@@ -81,9 +80,7 @@ export class SundayEventScheduleJob implements ScheduleJob {
       getCommunityEventChannelId()
     );
     await eventChannel.send({
-      content: `<@&${getCommunityEventRoleId()}> ${await createdEvent.createInviteURL(
-        { channel: getGeneralChannelId() }
-      )}`,
+      content: `<@&${getCommunityEventRoleId()}> ${createdEvent.url}`,
     });
   }
 }

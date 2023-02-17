@@ -184,8 +184,6 @@ export class Bot {
         new SundayEventScheduleJob()
       );
     }
-
-    new SundayEventScheduleJob().execute();
   }
 }
 
