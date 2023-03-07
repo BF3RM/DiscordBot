@@ -38,13 +38,13 @@ export class SundayEventScheduleJob implements ScheduleJob {
   }
 
   async createEvent(eventManager: GuildScheduledEventManager) {
-    const existingEvent = eventManager.cache.find(
-      (it) => it.creator === eventManager.client.user && it.name === eventName
-    );
-    if (existingEvent) {
-      logger.info("Found existing sunday event %s", existingEvent.id);
-      return;
-    }
+    // const existingEvent = eventManager.cache.find(
+    //   (it) => it.creator === eventManager.client.user && it.name === eventName
+    // );
+    // if (existingEvent) {
+    //   logger.info("Found existing sunday event %s", existingEvent.id);
+    //   return;
+    // }
 
     // in dayjs Sunday is the first day of the week...weird, okay lets work around it
     // First we go to the next week
