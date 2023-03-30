@@ -26,6 +26,7 @@ import {
 import { LoggerFactory } from "./logger.factory";
 import { runMigrations, SchedulerService } from "./services";
 import { ServerListJob, SundayEventScheduleJob } from "./tasks";
+import { ServerListJob, FridayEventScheduleJob } from "./tasks";
 
 const logger = LoggerFactory.getLogger("Bot");
 
