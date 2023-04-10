@@ -52,9 +52,9 @@ export class FridayEventScheduleJob implements ScheduleJob {
     // And set the time to 19:00:00
     const fridayStartDate = dayjs()
       .add(3, "week")
-      .day(6)
-      .hour(1)
-      .minute(0)
+      .day(5)
+      .hour(22)
+      .minute(59)
       .second(0);
     const fridayEndDate = fridayStartDate.add(4, "hour");
 
