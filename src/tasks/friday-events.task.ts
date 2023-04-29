@@ -51,7 +51,7 @@ export class FridayEventScheduleJob implements ScheduleJob {
     // Then we set the day to 0 which is Sunday, not Monday ;)
     // And set the time to 19:00:00
     const fridayStartDate = dayjs()
-      .add(3, "week")
+      .add(2, "week")
       .day(5)
       .hour(22)
       .minute(59)
