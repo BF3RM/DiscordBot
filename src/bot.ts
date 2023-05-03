@@ -25,7 +25,11 @@ import {
 } from "./core";
 import { LoggerFactory } from "./logger.factory";
 import { runMigrations, SchedulerService } from "./services";
-import { ServerListJob, SundayEventScheduleJob, FridayEventScheduleJob } from "./tasks";
+import {
+  ServerListJob,
+  SundayEventScheduleJob,
+  FridayEventScheduleJob,
+} from "./tasks";
 
 const logger = LoggerFactory.getLogger("Bot");
 
@@ -193,6 +197,8 @@ export class Bot {
         new SundayEventScheduleJob()
       );
     }
+
+    new ServerListJob().execute();
   }
 }
 
