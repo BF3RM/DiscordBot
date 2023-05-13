@@ -11,6 +11,7 @@ export interface HeraServerInfo {
   roundLevelName: string;
   roundGameMode: string;
   roundPlayers: number;
+  roundMaxPlayers: number;
 }
 
 export class HeraService {

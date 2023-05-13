@@ -197,8 +197,6 @@ export class Bot {
         new SundayEventScheduleJob()
       );
     }
-
-    new ServerListJob().execute();
   }
 }
 

@@ -73,7 +73,7 @@ function createServerEmbed(server: HeraServerInfo) {
       { name: "Map", value: MAPS.get(levelName) ?? levelName, inline: true },
       {
         name: "Players",
-        value: `${server.roundPlayers}/80`,
+        value: `${server.roundPlayers}/${server.roundMaxPlayers}`,
         inline: true,
       },
       {
