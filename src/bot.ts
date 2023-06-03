@@ -25,11 +25,7 @@ import {
 } from "./core";
 import { LoggerFactory } from "./logger.factory";
 import { runMigrations, SchedulerService } from "./services";
-import {
-  ServerListJob,
-  SundayEventScheduleJob,
-  FridayEventScheduleJob,
-} from "./tasks";
+import { ServerListJob, SundayEventScheduleJob } from "./tasks";
 
 const logger = LoggerFactory.getLogger("Bot");
 
@@ -180,13 +176,6 @@ export class Bot {
         "ServerList",
         serverListScheduleRule,
         new ServerListJob()
-      );
-    }
-    if (fridayEventScheduleRule) {
-      SchedulerService.schedule(
-        "FridayEvent",
-        fridayEventScheduleRule,
-        new FridayEventScheduleJob()
       );
     }
 
