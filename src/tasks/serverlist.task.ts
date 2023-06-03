@@ -1,4 +1,4 @@
-import { Colors, Message } from "discord.js";
+import { Colors, Message, TextChannel } from "discord.js";
 
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
@@ -6,7 +6,11 @@ import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(duration);
 dayjs.extend(relativeTime);
 
-import { HeraServerInfo, HeraService, ScheduleJob } from "../services";
+import {
+  HeraServerInfo,
+  HeraService,
+  InitializableScheduleJob,
+} from "../services";
 import { createDefaultEmbed, fetchTextChannel } from "../utils";
 import { getServerListChannelId } from "../config";
 import { getClientInstance } from "../core";
@@ -94,10 +98,36 @@ function createServerEmbed(server: HeraServerInfo) {
     );
 }
 
-export class ServerListJob implements ScheduleJob {
-  private message: Message | null = null;
+export class ServerListJob implements InitializableScheduleJob {
+  private channel: TextChannel | undefined;
+  private message: Message | undefined;
+
+  async init() {
+    const client = getClientInstance();
+
+    this.channel = await fetchTextChannel(client, getServerListChannelId());
+
+    if (!this.channel) {
+      throw new Error("Failed to find server list channel");
+    }
+
+    this.message = this.channel.messages.cache.find(
+      (message) => message.author.id === client.user?.id
+    );
+
+    if (this.message) {
+      logger.info(`Found existing server list message (${this.message.id}})`);
+    }
+
+    await this.sendServerList();
+  }
 
   async execute() {
+    await this.sendServerList();
+    logger.debug("Updated server list");
+  }
+
+  private async sendServerList() {
     const heraService = HeraService.getInstance();
 
     const servers = await heraService.getServers();
@@ -116,14 +146,7 @@ export class ServerListJob implements ScheduleJob {
     if (this.message) {
       await this.message.edit({ embeds });
     } else {
-      const serverChannel = await fetchTextChannel(
-        getClientInstance(),
-        getServerListChannelId()
-      );
-
-      this.message = await serverChannel.send({ embeds });
+      this.message = await this.channel!.send({ embeds });
     }
-
-    logger.debug("Updated server list");
   }
 }

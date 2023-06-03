@@ -5,10 +5,21 @@ export interface ScheduleJob {
   execute(): Promise<void> | void;
 }
 
+export interface InitializableScheduleJob extends ScheduleJob {
+  init(): Promise<void> | void;
+}
+
 const logger = LoggerFactory.getLogger("Scheduler");
 
 export class SchedulerService {
-  static schedule(jobName: string, rule: string, job: ScheduleJob) {
+  static async schedule(
+    jobName: string,
+    rule: string,
+    job: ScheduleJob | InitializableScheduleJob
+  ) {
+    if ("init" in job) {
+      await job.init();
+    }
     const scheduledJob = schedule.scheduleJob(jobName, rule, async () => {
       try {
         logger.debug(
