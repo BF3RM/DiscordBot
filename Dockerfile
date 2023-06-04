@@ -15,9 +15,6 @@ RUN pnpm build
 RUN pnpm prune --prod
 
 FROM node:18 as runtime
-
-LABEL org.opencontainers.image.source https://github.com/BF3RM/DiscordBot
-
 WORKDIR /app
 
 COPY --from=builder /app/node_modules ./node_modules
