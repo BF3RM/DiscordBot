@@ -111,7 +111,9 @@ export class ServerListJob implements InitializableScheduleJob {
       throw new Error("Failed to find server list channel");
     }
 
-    this.message = this.channel.messages.cache.find(
+    const messages = await this.channel.messages.fetch();
+
+    this.message = messages.find(
       (message) => message.author.id === client.user?.id
     );
 
