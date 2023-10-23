@@ -53,7 +53,7 @@ export class SundayEventScheduleJob implements ScheduleJob {
     const sundayStartDate = dayjs()
       .add(1, "week")
       .day(0)
-      .hour(17)
+      .hour(18)
       .minute(0)
       .second(0);
     const sundayEndDate = sundayStartDate.add(4, "hour");
