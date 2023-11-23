@@ -19,7 +19,7 @@ const logger = LoggerFactory.getLogger("ServerEventsScheduleJob");
 
 const eventName = "Reality Mod Sundays";
 const eventDescription =
-  "UKF and BKY invite you to the weekly Sunday Reality Mod event to play with the rest of the community. Everyone is invited to join!";
+  "UKF invites you to the weekly Sunday Reality Mod event to play with the rest of the community. Everyone is invited to join!";
 
 export class SundayEventScheduleJob implements ScheduleJob {
   async execute() {
