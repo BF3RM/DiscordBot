@@ -71,7 +71,7 @@ function createServerEmbed(server: HeraServerInfo) {
     .setTitle(server.name)
     .setFooter({ text: "Last updated" })
     .setImage(
-      `https://s3.bf3reality.com/assets/loadingscreens/${levelName.toLowerCase()}.png`
+      `https://cdn.bf3reality.com/assets/loadingscreens/${levelName.toLowerCase()}.png`
     )
     .setFields(
       { name: "Map", value: MAPS.get(levelName) ?? levelName, inline: true },
