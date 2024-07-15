@@ -58,7 +58,3 @@ export const getCommunityEventRoleId = () =>
   getRequiredEnvVariable("COMMUNITY_EVENT_ROLE_ID");
 export const getCommunityEventChannelId = () =>
   getRequiredEnvVariable("COMMUNITY_EVENT_CHANNEL_ID");
-export const getSundayEventScheduleRule = () =>
-  getEnvVariable("SUNDAY_EVENT_SCHEDULE_RULE");
-export const getFridayEventScheduleRule = () =>
-  getEnvVariable("FRIDAY_EVENT_SCHEDULE_RULE");
