@@ -11,8 +11,6 @@ import {
 import {
   getBotToken,
   getServerListScheduleRule,
-  getSundayEventScheduleRule,
-  getFridayEventScheduleRule,
 } from "./config";
 import {
   Command,
@@ -25,7 +23,7 @@ import {
 } from "./core";
 import { LoggerFactory } from "./logger.factory";
 import { runMigrations, SchedulerService } from "./services";
-import { ServerListJob, SundayEventScheduleJob } from "./tasks";
+import { ServerListJob } from "./tasks";
 
 const logger = LoggerFactory.getLogger("Bot");
 
@@ -168,22 +166,12 @@ export class Bot {
 
   private scheduleJobs() {
     const serverListScheduleRule = getServerListScheduleRule();
-    const sundayEventScheduleRule = getSundayEventScheduleRule();
-    const fridayEventScheduleRule = getFridayEventScheduleRule();
 
     if (serverListScheduleRule) {
       SchedulerService.schedule(
         "ServerList",
         serverListScheduleRule,
         new ServerListJob()
-      );
-    }
-
-    if (sundayEventScheduleRule) {
-      SchedulerService.schedule(
-        "SundayEvent",
-        sundayEventScheduleRule,
-        new SundayEventScheduleJob()
       );
     }
   }
