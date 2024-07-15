@@ -1,3 +1,4 @@
+/*
 import dayjs from "dayjs";
 import {
   GuildScheduledEventEntityType,
@@ -84,3 +85,4 @@ export class SundayEventScheduleJob implements ScheduleJob {
     });
   }
 }
+*/
