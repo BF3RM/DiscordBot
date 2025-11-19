@@ -62,10 +62,12 @@ export default defineCommand({
         },
       ]);
 
-    await interaction.channel?.send({
-      embeds: [embed],
-      components: [row],
-    });
+    if (interaction.channel?.isSendable()) {
+      await interaction.channel.send({
+        embeds: [embed],
+        components: [row],
+      });
+    }
 
     await interaction.reply({
       content: "Done :)",

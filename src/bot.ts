@@ -8,10 +8,7 @@ import {
   REST,
   Routes,
 } from "discord.js";
-import {
-  getBotToken,
-  getServerListScheduleRule,
-} from "./config";
+import { getBotToken, getServerListScheduleRule } from "./config";
 import {
   Command,
   ButtonHandler,
@@ -28,10 +25,10 @@ import { ServerListJob } from "./tasks";
 const logger = LoggerFactory.getLogger("Bot");
 
 export class Bot {
-  private client: Client;
-  private commands = new Collection<string, Command>();
-  private buttonHandlers = new Collection<string, ButtonHandler>();
-  private modalHandlers = new Collection<string, ModalHandler>();
+  private readonly client: Client;
+  private readonly commands = new Collection<string, Command>();
+  private readonly buttonHandlers = new Collection<string, ButtonHandler>();
+  private readonly modalHandlers = new Collection<string, ModalHandler>();
 
   constructor() {
     this.client = getClientInstance();
@@ -53,7 +50,7 @@ export class Bot {
 
     await runMigrations();
 
-    this.client.on("ready", this.onReady.bind(this));
+    this.client.on("clientReady", this.onReady.bind(this));
     this.client.on("interactionCreate", this.onInteractionCreate.bind(this));
     this.client.on("guildCreate", this.onGuildCreate.bind(this));
 
@@ -63,7 +60,7 @@ export class Bot {
   private async onReady() {
     logger.info(`We are ready!`);
     await this.registerCommands();
-    await this.client.user?.setActivity("Dreaming about working code", {
+    this.client.user?.setActivity("Dreaming about working code", {
       type: ActivityType.Playing,
     });
     this.scheduleJobs();

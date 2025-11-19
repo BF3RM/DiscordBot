@@ -15,7 +15,7 @@ export interface HeraServerInfo {
 }
 
 export class HeraService {
-  private client: Axios;
+  private readonly client: Axios;
 
   constructor() {
     this.client = axios.create({ baseURL: getHeraEndpoint() });

@@ -1,4 +1,4 @@
-import { ApplicationCommandType, GuildMember } from "discord.js";
+import { ApplicationCommandType, MessageFlags } from "discord.js";
 
 import { defineContextMenuCommand } from "../core";
 import { SuggestionService } from "../services";
@@ -20,7 +20,7 @@ export default defineContextMenuCommand({
         embeds: [
           errorEmbed("You don't have permission to approve suggestions!"),
         ],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -34,7 +34,7 @@ export default defineContextMenuCommand({
     if (!suggestion) {
       await interaction.reply({
         embeds: [errorEmbed("Failed to find suggestion")],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -44,7 +44,7 @@ export default defineContextMenuCommand({
         embeds: [
           errorEmbed("Suggestion has already been approved or rejected!"),
         ],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }

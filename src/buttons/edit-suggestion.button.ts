@@ -1,4 +1,4 @@
-import { ButtonStyle } from "discord.js";
+import { ButtonStyle, MessageFlags } from "discord.js";
 
 import { defineButton } from "../core";
 import { EditSuggestionModal } from "../modals";
@@ -20,7 +20,7 @@ export default defineButton({
     if (!suggestion) {
       await interaction.reply({
         embeds: [errorEmbed("Failed to find suggestion")],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -28,7 +28,7 @@ export default defineButton({
     if (suggestion.suggestedBy !== interaction.user.id) {
       await interaction.reply({
         embeds: [errorEmbed("You are not allowed to edit this suggestion!")],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }

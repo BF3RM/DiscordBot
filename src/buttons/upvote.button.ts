@@ -1,4 +1,4 @@
-import { ButtonStyle, Colors, EmbedBuilder } from "discord.js";
+import { ButtonStyle, Colors, EmbedBuilder, MessageFlags } from "discord.js";
 
 import { defineButton } from "../core";
 import { LoggerFactory } from "../logger.factory";
@@ -36,23 +36,23 @@ export default defineButton({
               `[Click here to view the suggestion](${interaction.message.url})`
             ),
         ],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     } catch (err) {
       if (err instanceof SuggestionNotFoundError) {
         await interaction.reply({
           embeds: [errorEmbed("Failed to find suggestion")],
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       } else if (err instanceof UserAlreadyVotedError) {
         await interaction.reply({
           embeds: [errorEmbed(`You have already upvoted this suggestion`)],
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       } else if (err instanceof OwnSuggestionVoteError) {
         await interaction.reply({
           embeds: [errorEmbed(`You can not vote on your own suggestion`)],
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       } else {
         logger.error(err);

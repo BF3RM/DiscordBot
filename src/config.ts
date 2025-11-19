@@ -53,8 +53,3 @@ export const getServerListChannelId = () =>
   getRequiredEnvVariable("SERVER_LIST_CHANNEL_ID");
 export const getServerListScheduleRule = () =>
   getEnvVariable("SERVER_LIST_SCHEDULE_RULE");
-
-export const getCommunityEventRoleId = () =>
-  getRequiredEnvVariable("COMMUNITY_EVENT_ROLE_ID");
-export const getCommunityEventChannelId = () =>
-  getRequiredEnvVariable("COMMUNITY_EVENT_CHANNEL_ID");

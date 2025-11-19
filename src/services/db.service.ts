@@ -19,21 +19,19 @@ const logger = LoggerFactory.getLogger("DB");
 let dataSource: DataSource | undefined;
 
 export const getDatabaseDataSource = () => {
-  if (!dataSource) {
-    dataSource = new DataSource({
-      type: "postgres",
-      host: getDatabaseHost(),
-      port: getDatabasePort(),
-      username: getDatabaseUsername(),
-      password: getDatabasePassword(),
-      database: getDatabaseName(),
-      entities: [SuggestionEntity, SuggestionVoteEntity],
-      migrations: [...migrationChangeSets],
-      migrationsRun: false,
-      synchronize: false,
-      logger: new TypeORMLogger(),
-    });
-  }
+  dataSource ??= new DataSource({
+    type: "postgres",
+    host: getDatabaseHost(),
+    port: getDatabasePort(),
+    username: getDatabaseUsername(),
+    password: getDatabasePassword(),
+    database: getDatabaseName(),
+    entities: [SuggestionEntity, SuggestionVoteEntity],
+    migrations: [...migrationChangeSets],
+    migrationsRun: false,
+    synchronize: false,
+    logger: new TypeORMLogger(),
+  });
 
   return dataSource;
 };
@@ -70,7 +68,7 @@ export class TypeORMLogger implements Logger {
     parameters?: any[] | undefined,
     queryRunner?: QueryRunner | undefined
   ) {
-    logger.error({ query, parameters }, "query failed: %o", error);
+    logger.error({ error, query, parameters }, "query failed: %o");
   }
 
   logQuerySlow(
